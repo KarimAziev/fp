@@ -1,0 +1,123 @@
+* fp
+
+Collection of combinators for Emacs Lisp
+
++ ~fp--pipe~ (&rest functions)
+Return left-to-right composition from FUNCTIONS.
+
+#+begin_src emacs-lisp
+(funcall (fp--pipe exp prin1-to-string) 5)
+#+end_src
+
+#+RESULTS:
+: 148.4131591025766
+
++ ~fp--compose~ (&rest functions)
+Return right-to-left composition from FUNCTIONS.
+
+#+begin_src emacs-lisp
+(funcall (fp--compose prin1-to-string exp) 5)
+#+end_src
+
+#+RESULTS:
+: 148.4131591025766
+
++ ~fp--partial~ (fn &rest args)
+Return a partial application of FN to left-hand ARGS.
+
+ARGS is a list of the last N arguments to pass to FUN. The result is a new
+function which does the same as FN, except that the last N arguments are fixed
+at the values with which this function was called.
+
+#+begin_src elisp
+(funcall (fp--partial format "%s item") 1)
+#+end_src
+
+#+RESULTS:
+: 1 item
+
++ ~fp--partial~ (fn &rest args)
+Return a partial application of FN to left-hand ARGS.
+
+ARGS is a list of the last N arguments to pass to FUN. The result is a new
+function which does the same as FN, except that the last N arguments are fixed
+at the values with which this function was called.
+
+#+begin_src elisp
+(funcall (fp--rpartial format 1) "%s item")
+#+end_src
+
+#+RESULTS:
+: 1 item
+
++ ~fp--and~ (&rest functions)
+Return an unary function which call invoke FUNCTIONS until one of them yields nil.
+
+#+begin_src elisp
+(seq-find (fp--and bufferp buffer-live-p)
+            (buffer-list))
+#+end_src
+
+#+RESULTS:
+: #<buffer README.org>
+
++ ~fp--or~ (&rest functions)
+Return a function that FUNCTIONS until one of them yields non-nil.
+
+#+begin_src elisp
+(seq-filter (fp--or
+                  (fp--rpartial window-parameter 'visible)
+                  (fp--compose not window-dedicated-p))
+              (window-list))
+#+end_src
+
+#+RESULTS:
+| #<window 3 on README.org> | #<window 7 on fp.el> |
+
++ ~fp-pipe~ (&rest functions)
+Return left-to-right composition from FUNCTIONS.
+
+#+begin_src emacs-lisp
+(funcall (fp-pipe #'exp #'prin1-to-string) 5)
+#+end_src
+
+#+RESULTS:
+: 148.4131591025766
+
++ ~fp-compose~ (&rest functions)
+Return right-to-left composition from FUNCTIONS.
+
+#+begin_src emacs-lisp
+(funcall (fp-compose #'prin1-to-string #'exp) 5)
+#+end_src
+
+#+RESULTS:
+: 148.4131591025766
+
++ ~fp-partial~ (fn &rest args)
+Return a partial application of FN to left-hand ARGS.
+
+ARGS is a list of the last N arguments to pass to FUN. The result is a new
+function which does the same as FN, except that the last N arguments are fixed
+at the values with which this function was called.
+
+#+begin_src elisp
+(funcall (fp-partial #'format "%s item") 1)
+#+end_src
+
+#+RESULTS:
+: 1 item
+
++ ~fp-partial~ (fn &rest args)
+Return a partial application of FN to left-hand ARGS.
+
+ARGS is a list of the last N arguments to pass to FUN. The result is a new
+function which does the same as FN, except that the last N arguments are fixed
+at the values with which this function was called.
+
+#+begin_src elisp
+(funcall (fp-rpartial #'format 1) "%s item")
+#+end_src
+
+#+RESULTS:
+: 1 item

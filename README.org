@@ -36,7 +36,7 @@ at the values with which this function was called.
 #+RESULTS:
 : 1 item
 
-+ ~fp--partial~ (fn &rest args)
++ ~fp--rpartial~ (fn &rest args)
 Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a new
@@ -108,7 +108,7 @@ at the values with which this function was called.
 #+RESULTS:
 : 1 item
 
-+ ~fp-partial~ (fn &rest args)
++ ~fp-rpartial~ (fn &rest args)
 Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a new

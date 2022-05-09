@@ -1,6 +1,6 @@
 * fp
 
-Collection of combinators for Emacs Lisp
+Collection of combinators for Emacs Lisp.
 
 + ~fp--pipe~ (&rest functions)
 Return left-to-right composition from FUNCTIONS.

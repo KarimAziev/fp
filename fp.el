@@ -41,7 +41,7 @@
 
 ;;;###autoload
 (defmacro fp--or (&rest functions)
-  "Return an unary function which call invoke FUNCTIONS until one of them yields non-nil."
+  "Return an unary function which invoke FUNCTIONS until first non-nil result."
   (declare (debug t) (pure t) (side-effect-free t))
   `(lambda (it) (or
             ,@(mapcar (lambda (v) (if (symbolp v)
@@ -51,7 +51,7 @@
 
 ;;;###autoload
 (defmacro fp--and (&rest functions)
-  "Return an unary function which call invoke FUNCTIONS until one of them yields nil."
+  "Return an unary function which invoke FUNCTIONS until first nil result."
   (declare (debug t) (pure t) (side-effect-free t))
   `(lambda (it) (and
             ,@(mapcar (lambda (v) (if (symbolp v)

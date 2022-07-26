@@ -1,5 +1,7 @@
 # fp
 
+Collection of combinators to write Elisp code in point-free style.
+
 - [Macros](#macros)
   - [fp--pipe (\&rest functions)](#fp--pipe-rest-functions)
   - [fp--compose (\&rest functions)](#fp--compose-rest-functions)
@@ -71,7 +73,7 @@ t
 
 ### fp--rpartial (fn \&rest args)
 
-Return a partial application of FN to left-hand ARGS.
+Return a partial application of FN to right-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a
 new function which does the same as FN, except that the last N arguments
@@ -232,7 +234,7 @@ t
 
 ### fp-rpartial (fn \&rest args)
 
-Return a partial application of FN to left-hand ARGS.
+Return a partial application of FN to right-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a
 new function which does the same as FN, except that the last N arguments

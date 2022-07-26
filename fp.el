@@ -101,6 +101,31 @@ at the values with which this function was called."
                    `(apply ,fn (append pre-args (list ,@args))))))))
 
 ;;;###autoload
+(defmacro fp--converge (combine-fn &rest functions)
+  "Return a function that apply COMBINE-FN with results of branching FUNCTIONS.
+If first element of FUNCTIONS is vector, it will be used instead.
+
+Example:
+
+\(funcall (fp--converge concat [upcase downcase]) \"John\").
+\(funcall (fp--converge concat upcase downcase) \"John\")
+
+Result: \"JOHNjohn\"."
+  `(lambda (&rest args) (apply
+                    ,@(if (symbolp combine-fn)
+                          `(#',combine-fn)
+                        (list combine-fn))
+                    (list
+                     ,@(mapcar (lambda (v)
+                                 (setq v (macroexpand v))
+                                 (if (symbolp v)
+                                     `(apply #',v args)
+                                   `(apply ,v args)))
+                               (if (vectorp (car functions))
+                                   (append (car functions) nil)
+                                 functions))))))
+
+;;;###autoload
 (defun fp-partial (fn &rest args)
   "Return a function that is a partial application of FN to ARGS.
 

@@ -1,123 +1,211 @@
+#+OPTIONS: toc:4 num:nil
+
 * fp
+  - [[#macros][Macros]]
+    - [[#fp--pipe-rest-functions][fp--pipe (&rest functions)]]
+    - [[#fp--compose-rest-functions][fp--compose (&rest functions)]]
+    - [[#fp--partial-fn-rest-args][fp--partial (fn &rest args)]]
+    - [[#fp--rpartial-fn-rest-args][fp--rpartial (fn &rest args)]]
+    - [[#fp--and-rest-functions][fp--and (&rest functions)]]
+    - [[#fp--or-rest-functions][fp--or (&rest functions)]]
+    - [[#fp--converge-combine-fn-rest-functions][fp--converge (combine-fn &rest functions)]]
+  - [[#functions][Functions]]
+    - [[#fp-pipe-rest-functions][fp-pipe (&rest functions)]]
+    - [[#fp-compose-rest-functions][fp-compose (&rest functions)]]
+    - [[#fp-partial-fn-rest-args][fp-partial (fn &rest args)]]
+    - [[#fp-rpartial-fn-rest-args][fp-rpartial (fn &rest args)]]
 
-Collection of combinators for Emacs Lisp.
+** Macros
+#+PROPERTY: header-args :results code
+*** fp--pipe (&rest functions)
 
-+ ~fp--pipe~ (&rest functions)
 Return left-to-right composition from FUNCTIONS.
 
-#+begin_src emacs-lisp
-(funcall (fp--pipe exp prin1-to-string) 5)
+*Example:*
+#+begin_src emacs-lisp :results raw :results code
+(funcall (fp--pipe upcase split-string) "some string")
 #+end_src
 
-#+RESULTS:
-: 148.4131591025766
+*Result:*
+#+begin_src emacs-lisp
+("SOME" "STRING")
+#+end_src
 
-+ ~fp--compose~ (&rest functions)
+*** fp--compose (&rest functions)
+
 Return right-to-left composition from FUNCTIONS.
 
+*Example:*
 #+begin_src emacs-lisp
-(funcall (fp--compose prin1-to-string exp) 5)
+(funcall (fp--compose split-string upcase) "some string")
 #+end_src
 
-#+RESULTS:
-: 148.4131591025766
+*Result:*
+#+begin_src emacs-lisp
+("SOME" "STRING")
+#+end_src
 
-+ ~fp--partial~ (fn &rest args)
+*** fp--partial (fn &rest args)
 Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called.
 
+*Example:*
 #+begin_src elisp
-(funcall (fp--partial format "%s item") 1)
+(funcall (fp--partial > 3) 2)
 #+end_src
 
-#+RESULTS:
-: 1 item
+*Result:*
+#+begin_src elisp
+t
+#+end_src
 
-+ ~fp--rpartial~ (fn &rest args)
+*** fp--rpartial (fn &rest args)
 Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called.
 
+*Example:*
 #+begin_src elisp
-(funcall (fp--rpartial format 1) "%s item")
+(funcall (fp--rpartial > 3) 2)
 #+end_src
 
-#+RESULTS:
-: 1 item
+*Result:*
+#+begin_src elisp
+nil
+#+end_src
 
-+ ~fp--and~ (&rest functions)
+*Example:*
+#+begin_src elisp
+(funcall (fp--rpartial plist-get :name) '(:name "John" :age 30))
+#+end_src
+
+*Result:*
+#+begin_src elisp
+"John"
+#+end_src
+
+*** fp--and (&rest functions)
 Return an unary function which call invoke FUNCTIONS until one of them yields nil.
 
+*Example:*
 #+begin_src elisp
-(seq-find (fp--and bufferp buffer-live-p)
-            (buffer-list))
+(funcall (fp--and numberp 1+) 30)
 #+end_src
 
-#+RESULTS:
-: #<buffer README.org>
+*Result:*
+#+begin_src elisp
+31
+#+end_src
 
-+ ~fp--or~ (&rest functions)
+*** fp--or (&rest functions)
 Return a function that FUNCTIONS until one of them yields non-nil.
 
+*Example:*
 #+begin_src elisp
-(seq-filter (fp--or
-                  (fp--rpartial window-parameter 'visible)
-                  (fp--compose not window-dedicated-p))
-              (window-list))
+(seq-filter
+ (fp--or numberp stringp)
+ '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30)))
 #+end_src
 
-#+RESULTS:
-| #<window 3 on README.org> | #<window 7 on fp.el> |
+*Result:*
+#+begin_src elisp
+("a" "b" "c" 34)
+#+end_src
 
-+ ~fp-pipe~ (&rest functions)
+*** fp--converge (combine-fn &rest functions)
+
+Return a new function that accepts a converging function COMBINE-FN and a list of branching FUNCTIONS.
+
+When invoked, this new function is applied to some arguments, and each branching function is applied to those same arguments. The results of each branching function are passed as arguments to the converging function to produce the return value.
+
+If first element of FUNCTIONS is a vector, it will be used instead.
+
+For example here both ~upcase~ and ~downcase~ applied with argument John, and ~concat~ applied with results.
+
+*Example:*
+#+begin_src emacs-lisp
+(funcall (fp--converge concat [upcase downcase]) "John")
+#+end_src
+
+*Result:*
+#+begin_src emacs-lisp
+"JOHNjohn"
+#+end_src
+
+*Example:*
+#+begin_src emacs-lisp :results code
+(funcall (fp--converge concat upcase downcase) "John")
+#+end_src
+
+*Result:*
+#+begin_src emacs-lisp
+"JOHNjohn"
+#+end_src
+
+** Functions
+#+PROPERTY: header-args :results code
+*** fp-pipe (&rest functions)
 Return left-to-right composition from FUNCTIONS.
 
+*Example:*
 #+begin_src emacs-lisp
-(funcall (fp-pipe #'exp #'prin1-to-string) 5)
+(funcall (fp-pipe #'upcase #'split-string) "some string")
 #+end_src
 
-#+RESULTS:
-: 148.4131591025766
+*Result:*
+#+begin_src emacs-lisp
+("SOME" "STRING")
+#+end_src
 
-+ ~fp-compose~ (&rest functions)
+*** fp-compose (&rest functions)
 Return right-to-left composition from FUNCTIONS.
 
+*Example:*
 #+begin_src emacs-lisp
-(funcall (fp-compose #'prin1-to-string #'exp) 5)
+(funcall (fp-compose #'split-string #'upcase) "some string")
+
 #+end_src
 
-#+RESULTS:
-: 148.4131591025766
+*Result:*
+#+begin_src emacs-lisp
+("SOME" "STRING")
+#+end_src
 
-+ ~fp-partial~ (fn &rest args)
+*** fp-partial (fn &rest args)
 Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called.
 
+*Example:*
 #+begin_src elisp
-(funcall (fp-partial #'format "%s item") 1)
+(funcall (fp-partial #'> 3) 2)
 #+end_src
 
-#+RESULTS:
-: 1 item
+*Result:*
+#+begin_src elisp
+t
+#+end_src
 
-+ ~fp-rpartial~ (fn &rest args)
+*** fp-rpartial (fn &rest args)
 Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FUN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called.
 
+*Example:*
 #+begin_src elisp
-(funcall (fp-rpartial #'format 1) "%s item")
+(funcall (fp-rpartial #'> 3) 2)
 #+end_src
 
-#+RESULTS:
-: 1 item
+*Result:*
+#+begin_src elisp
+nil
+#+end_src

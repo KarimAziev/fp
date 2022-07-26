@@ -1,12 +1,12 @@
 # fp
 
 - [Macros](#macros)
-  - [fp–pipe (\&rest functions)](#fp--pipe-rest-functions)
-  - [fp–compose (\&rest functions)](#fp--compose-rest-functions)
-  - [fp–partial (fn \&rest args)](#fp--partial-fn-rest-args)
-  - [fp–rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
-  - [fp–and (\&rest functions)](#fp--and-rest-functions)
-  - [fp–or (\&rest functions)](#fp--or-rest-functions)
+  - [fp--pipe (\&rest functions)](#fp--pipe-rest-functions)
+  - [fp--compose (\&rest functions)](#fp--compose-rest-functions)
+  - [fp--partial (fn \&rest args)](#fp--partial-fn-rest-args)
+  - [fp--rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
+  - [fp--and (\&rest functions)](#fp--and-rest-functions)
+  - [fp--or (\&rest functions)](#fp--or-rest-functions)
   - [fp–converge (combine-fn \&rest
     functions)](#fp--converge-combine-fn-rest-functions)
 - [Functions](#functions)
@@ -17,7 +17,7 @@
 
 ## Macros
 
-### fp–pipe (\&rest functions)
+### fp--pipe (\&rest functions)
 
 Return left-to-right composition from FUNCTIONS.
 
@@ -33,7 +33,7 @@ Return left-to-right composition from FUNCTIONS.
 ("SOME" "STRING")
 ```
 
-### fp–compose (\&rest functions)
+### fp--compose (\&rest functions)
 
 Return right-to-left composition from FUNCTIONS.
 
@@ -49,7 +49,7 @@ Return right-to-left composition from FUNCTIONS.
 ("SOME" "STRING")
 ```
 
-### fp–partial (fn \&rest args)
+### fp--partial (fn \&rest args)
 
 Return a partial application of FN to left-hand ARGS.
 
@@ -69,7 +69,7 @@ are fixed at the values with which this function was called.
 t
 ```
 
-### fp–rpartial (fn \&rest args)
+### fp--rpartial (fn \&rest args)
 
 Return a partial application of FN to left-hand ARGS.
 
@@ -101,7 +101,7 @@ nil
 "John"
 ```
 
-### fp–and (\&rest functions)
+### fp--and (\&rest functions)
 
 Return an unary function which call invoke FUNCTIONS until one of them
 yields nil.
@@ -118,7 +118,7 @@ yields nil.
 31
 ```
 
-### fp–or (\&rest functions)
+### fp--or (\&rest functions)
 
 Return a function that FUNCTIONS until one of them yields non-nil.
 

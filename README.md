@@ -7,7 +7,7 @@
   - [fp--rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
   - [fp--and (\&rest functions)](#fp--and-rest-functions)
   - [fp--or (\&rest functions)](#fp--or-rest-functions)
-  - [fp–converge (combine-fn \&rest
+  - [fp--converge (combine-fn \&rest
     functions)](#fp--converge-combine-fn-rest-functions)
 - [Functions](#functions)
   - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
@@ -136,7 +136,7 @@ Return a function that FUNCTIONS until one of them yields non-nil.
 ("a" "b" "c" 34)
 ```
 
-### fp–converge (combine-fn \&rest functions)
+### fp--converge (combine-fn \&rest functions)
 
 Return a new function that accepts a converging function COMBINE-FN and
 a list of branching FUNCTIONS.

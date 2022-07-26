@@ -1,19 +1,19 @@
 # fp
 
-  - [Macros](#macros)
-      - [fp–pipe (\&rest functions)](#fp--pipe-rest-functions)
-      - [fp–compose (\&rest functions)](#fp--compose-rest-functions)
-      - [fp–partial (fn \&rest args)](#fp--partial-fn-rest-args)
-      - [fp–rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
-      - [fp–and (\&rest functions)](#fp--and-rest-functions)
-      - [fp–or (\&rest functions)](#fp--or-rest-functions)
-      - [fp–converge (combine-fn \&rest
-        functions)](#fp--converge-combine-fn-rest-functions)
-  - [Functions](#functions)
-      - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
-      - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
-      - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
-      - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
+- [Macros](#macros)
+  - [fp–pipe (\&rest functions)](#fp--pipe-rest-functions)
+  - [fp–compose (\&rest functions)](#fp--compose-rest-functions)
+  - [fp–partial (fn \&rest args)](#fp--partial-fn-rest-args)
+  - [fp–rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
+  - [fp–and (\&rest functions)](#fp--and-rest-functions)
+  - [fp–or (\&rest functions)](#fp--or-rest-functions)
+  - [fp–converge (combine-fn \&rest
+    functions)](#fp--converge-combine-fn-rest-functions)
+- [Functions](#functions)
+  - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
+  - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
+  - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
+  - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
 
 ## Macros
 
@@ -23,13 +23,13 @@ Return left-to-right composition from FUNCTIONS.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp--pipe upcase split-string) "some string")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("SOME" "STRING")
 ```
 
@@ -39,13 +39,13 @@ Return right-to-left composition from FUNCTIONS.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp--compose split-string upcase) "some string")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("SOME" "STRING")
 ```
 
@@ -59,13 +59,13 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp--partial > 3) 2)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 t
 ```
 
@@ -79,25 +79,25 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp--rpartial > 3) 2)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 nil
 ```
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp--rpartial plist-get :name) '(:name "John" :age 30))
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 "John"
 ```
 
@@ -108,13 +108,13 @@ yields nil.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp--and numberp 1+) 30)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 31
 ```
 
@@ -124,7 +124,7 @@ Return a function that FUNCTIONS until one of them yields non-nil.
 
 **Example:**
 
-``` elisp
+```elisp
 (seq-filter
  (fp--or numberp stringp)
  '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30)))
@@ -132,7 +132,7 @@ Return a function that FUNCTIONS until one of them yields non-nil.
 
 **Result:**
 
-``` elisp
+```elisp
 ("a" "b" "c" 34)
 ```
 
@@ -153,25 +153,25 @@ John, and `concat` applied with results.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp--converge concat [upcase downcase]) "John")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 "JOHNjohn"
 ```
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp--converge concat upcase downcase) "John")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 "JOHNjohn"
 ```
 
@@ -183,13 +183,13 @@ Return left-to-right composition from FUNCTIONS.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp-pipe #'upcase #'split-string) "some string")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("SOME" "STRING")
 ```
 
@@ -199,14 +199,14 @@ Return right-to-left composition from FUNCTIONS.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp-compose #'split-string #'upcase) "some string")
 
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("SOME" "STRING")
 ```
 
@@ -220,13 +220,13 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp-partial #'> 3) 2)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 t
 ```
 
@@ -240,12 +240,12 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp-rpartial #'> 3) 2)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 nil
 ```

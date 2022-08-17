@@ -11,6 +11,8 @@
     - [[#fp--converge-combine-fn-rest-functions][fp--converge (combine-fn &rest functions)]]
     - [[#fp--when-pred-fn][fp--when (pred fn)]]
     - [[#fp--unless-pred-fn][fp--unless (pred fn)]]
+    - [[#fp--const-value][fp--const (value)]]
+    - [[#fp--ignore-args-fn][fp--ignore-args (fn)]]
   - [[#functions][Functions]]
     - [[#fp-pipe-rest-functions][fp-pipe (&rest functions)]]
     - [[#fp-compose-rest-functions][fp-compose (&rest functions)]]
@@ -21,7 +23,7 @@
 #+PROPERTY: header-args :results code
 *** fp--pipe (&rest functions)
 
-Return left-to-right composition from FUNCTIONS.
+Return left-to-right composition from ~functions~.
 
 *Example:*
 #+begin_src emacs-lisp :results raw :results code
@@ -35,7 +37,7 @@ Return left-to-right composition from FUNCTIONS.
 
 *** fp--compose (&rest functions)
 
-Return right-to-left composition from FUNCTIONS.
+Return right-to-left composition from ~functions~.
 
 *Example:*
 #+begin_src emacs-lisp
@@ -48,10 +50,10 @@ Return right-to-left composition from FUNCTIONS.
 #+end_src
 
 *** fp--partial (fn &rest args)
-Return a partial application of FN to left-hand ARGS.
+Return a partial application of ~fn~ to left-hand ~args~.
 
-ARGS is a list of the last N arguments to pass to FUN. The result is a new
-function which does the same as FN, except that the last N arguments are fixed
+~args~ is a list of the last N arguments to pass to ~fn~. The result is a new
+function which does the same as ~fn~, except that the last N arguments are fixed
 at the values with which this function was called.
 
 *Example:*
@@ -65,10 +67,10 @@ t
 #+end_src
 
 *** fp--rpartial (fn &rest args)
-Return a partial application of FN to right-hand ARGS.
+Return a partial application of ~fn~ to right-hand ~args~.
 
-ARGS is a list of the last N arguments to pass to FUN. The result is a new
-function which does the same as FN, except that the last N arguments are fixed
+~args~ is a list of the last N arguments to pass to ~fn~. The result is a new
+function which does the same as ~fn~, except that the last N arguments are fixed
 at the values with which this function was called.
 
 *Example:*
@@ -92,7 +94,7 @@ nil
 #+end_src
 
 *** fp--and (&rest functions)
-Return an unary function which call invoke FUNCTIONS until one of them yields nil.
+Return an unary function which call invoke ~functions~ until one of them yields nil.
 
 *Example:*
 #+begin_src elisp
@@ -105,7 +107,7 @@ Return an unary function which call invoke FUNCTIONS until one of them yields ni
 #+end_src
 
 *** fp--or (&rest functions)
-Return a function that FUNCTIONS until one of them yields non-nil.
+Return a function that ~functions~ until one of them yields non-nil.
 
 *Example:*
 #+begin_src elisp
@@ -121,11 +123,11 @@ Return a function that FUNCTIONS until one of them yields non-nil.
 
 *** fp--converge (combine-fn &rest functions)
 
-Return a new function that accepts a converging function COMBINE-FN and a list of branching FUNCTIONS.
+Return a new function that accepts a converging function COMBINE-FN and a list of branching ~functions~.
 
 When invoked, this new function is applied to some arguments, and each branching function is applied to those same arguments. The results of each branching function are passed as arguments to the converging function to produce the return value.
 
-If first element of FUNCTIONS is a vector, it will be used instead.
+If first element of ~functions~ is a vector, it will be used instead.
 
 For example here both ~upcase~ and ~downcase~ applied with argument John, and ~concat~ applied with results.
 
@@ -150,11 +152,11 @@ For example here both ~upcase~ and ~downcase~ applied with argument John, and ~c
 #+end_src
 
 *** fp--when (pred fn)
-Return an unary function that invoke FN if result of calling PRED is non-nil.
+Return an unary function that invoke ~fn~ if result of calling PRED is non-nil.
 
 If result of PRED is nil, return the argument as is.
 
-Both PRED and FN called with one argument.
+Both PRED and ~fn~ called with one argument.
 
 #+begin_src emacs-lisp
 (defun truncate-maybe (str len)
@@ -174,11 +176,11 @@ Both PRED and FN called with one argument.
 #+end_src
 
 *** fp--unless (pred fn)
-Return an unary function that invoke FN if result of calling PRED is non-nil.
+Return an unary function that invoke ~fn~ if result of calling PRED is non-nil.
 
 If result of PRED is nil, return the argument as is.
 
-Both PRED and FN called with one argument.
+Both PRED and ~fn~ called with one argument.
 
 #+begin_src emacs-lisp
 (defun divide-maybe (a b)
@@ -196,11 +198,44 @@ Both PRED and FN called with one argument.
 (0 5)
 #+end_src
 
+*** fp--const (value)
+
+Return a function that always return ~value.~
+
+This function accepts any number of arguments, but ignores them.
+
+#+begin_src emacs-lisp
+(funcall (fp--const 2) 4)
+#+end_src
+
+*Result*:
+#+begin_src emacs-lisp
+2
+#+end_src
+
+*** fp--ignore-args (fn)
+
+Return a function that invoke ~fn~ without args.
+
+This function accepts any number of arguments, but ignores them.
+
+#+begin_src emacs-lisp
+(defun my-fn ()
+  "Show message hello world."
+  (message "Hello world"))
+
+(funcall (fp--ignore-args my-fn) 4)
+#+end_src
+
+*Result*:
+#+begin_src emacs-lisp
+"Hello world"
+#+end_src
 
 ** Functions
 #+PROPERTY: header-args :results code
 *** fp-pipe (&rest functions)
-Return left-to-right composition from FUNCTIONS.
+Return left-to-right composition from ~functions~.
 
 *Example:*
 #+begin_src emacs-lisp
@@ -213,7 +248,7 @@ Return left-to-right composition from FUNCTIONS.
 #+end_src
 
 *** fp-compose (&rest functions)
-Return right-to-left composition from FUNCTIONS.
+Return right-to-left composition from ~functions~.
 
 *Example:*
 #+begin_src emacs-lisp
@@ -227,10 +262,10 @@ Return right-to-left composition from FUNCTIONS.
 #+end_src
 
 *** fp-partial (fn &rest args)
-Return a partial application of FN to left-hand ARGS.
+Return a partial application of ~fn~ to left-hand ~args~.
 
-ARGS is a list of the last N arguments to pass to FUN. The result is a new
-function which does the same as FN, except that the last N arguments are fixed
+~args~ is a list of the last N arguments to pass to ~fn~. The result is a new
+function which does the same as ~fn~, except that the last N arguments are fixed
 at the values with which this function was called.
 
 *Example:*
@@ -244,10 +279,10 @@ t
 #+end_src
 
 *** fp-rpartial (fn &rest args)
-Return a partial application of FN to right-hand ARGS.
+Return a partial application of ~fn~ to right-hand ~args~.
 
-ARGS is a list of the last N arguments to pass to FUN. The result is a new
-function which does the same as FN, except that the last N arguments are fixed
+~args~ is a list of the last N arguments to pass to ~fn~. The result is a new
+function which does the same as ~fn~, except that the last N arguments are fixed
 at the values with which this function was called.
 
 *Example:*

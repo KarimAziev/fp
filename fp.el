@@ -5,7 +5,7 @@
 ;; Author: Karim Aziiev <karim.aziiev@gmail.com>
 ;; URL: https://github.com/KarimAziev/fp
 ;; Keywords: lisp
-;; Version: 0.2.0
+;; Version: 0.3.0
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -150,6 +150,23 @@ If result of PRED is non nil return the argument as is."
               ,(if (symbolp fn)
                    `(,fn arg)
                  `(funcall ,fn arg)))))
+
+;;;###autoload
+(defmacro fp--const (value)
+  "Return a function that always return VALUE.
+
+This function accepts any number of arguments, but ignores them."
+  (declare (pure t) (side-effect-free error-free))
+  `(lambda (&rest _) ,value))
+
+;;;###autoload
+(defmacro fp--ignore-args (fn)
+  "Return a function that invoke FN without args.
+
+This function accepts any number of arguments, but ignores them."
+  `(lambda (&rest _) ,(if (symbolp fn)
+                     `(,fn)
+                   `(funcall ,fn arg))))
 
 ;;;###autoload
 (defun fp-partial (fn &rest args)

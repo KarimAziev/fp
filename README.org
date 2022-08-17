@@ -9,6 +9,8 @@
     - [[#fp--and-rest-functions][fp--and (&rest functions)]]
     - [[#fp--or-rest-functions][fp--or (&rest functions)]]
     - [[#fp--converge-combine-fn-rest-functions][fp--converge (combine-fn &rest functions)]]
+    - [[#fp--when-pred-fn][fp--when (pred fn)]]
+    - [[#fp--unless-pred-fn][fp--unless (pred fn)]]
   - [[#functions][Functions]]
     - [[#fp-pipe-rest-functions][fp-pipe (&rest functions)]]
     - [[#fp-compose-rest-functions][fp-compose (&rest functions)]]
@@ -146,6 +148,54 @@ For example here both ~upcase~ and ~downcase~ applied with argument John, and ~c
 #+begin_src emacs-lisp
 "JOHNjohn"
 #+end_src
+
+*** fp--when (pred fn)
+Return an unary function that invoke FN if result of calling PRED is non-nil.
+
+If result of PRED is nil, return the argument as is.
+
+Both PRED and FN called with one argument.
+
+#+begin_src emacs-lisp
+(defun truncate-maybe (str len)
+  "Truncate STR if longer LEN, otherwise return STR."
+  (funcall (fp--when
+            (fp--compose (fp--partial < len) length)
+            (fp--rpartial substring 0 len))
+           str))
+
+(list (truncate-maybe "long string" 4)
+      (truncate-maybe "lo" 4))
+#+end_src
+
+*Result:*
+#+begin_src emacs-lisp
+("long" "lo")
+#+end_src
+
+*** fp--unless (pred fn)
+Return an unary function that invoke FN if result of calling PRED is non-nil.
+
+If result of PRED is nil, return the argument as is.
+
+Both PRED and FN called with one argument.
+
+#+begin_src emacs-lisp
+(defun divide-maybe (a b)
+  "Divide A and B unless B is 0."
+  (funcall (fp--unless zerop
+                       (fp--partial / a))
+           b))
+
+(list (divide-maybe 10 0)
+      (divide-maybe 10 2))
+#+end_src
+
+*Result*:
+#+begin_src emacs-lisp
+(0 5)
+#+end_src
+
 
 ** Functions
 #+PROPERTY: header-args :results code

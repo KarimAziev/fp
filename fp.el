@@ -126,6 +126,32 @@ Result: \"JOHNjohn\"."
                                  functions))))))
 
 ;;;###autoload
+(defmacro fp--when (pred fn)
+  "Return an unary function that invoke FN if result of calling PRED is non-nil.
+Both PRED and FN called with one argument.
+If result of PRED is nil, return the argument as is."
+  `(lambda (arg) (if ,(if (symbolp pred)
+                     `(,pred arg)
+                   `(funcall ,pred arg))
+                ,(if (symbolp fn)
+                     `(,fn arg)
+                   `(funcall ,fn arg))
+              arg)))
+
+;;;###autoload
+(defmacro fp--unless (pred fn)
+  "Return an unary function that invoke FN if result of calling PRED is nil.
+Both PRED and FN called with one argument.
+If result of PRED is non nil return the argument as is."
+  `(lambda (arg) (if ,(if (symbolp pred)
+                     `(,pred arg)
+                   `(funcall ,pred arg))
+                arg
+              ,(if (symbolp fn)
+                   `(,fn arg)
+                 `(funcall ,fn arg)))))
+
+;;;###autoload
 (defun fp-partial (fn &rest args)
   "Return a function that is a partial application of FN to ARGS.
 
@@ -162,7 +188,7 @@ at the values with which this function was called."
 
 ;;;###autoload
 (defun fp-compose-while-not-nil (&rest functions)
-   "Return right-to-left composition from FUNCTIONS."
+  "Return right-to-left composition from FUNCTIONS."
   (let ((fn))
     (setq functions (reverse functions))
     (setq fn (pop functions))

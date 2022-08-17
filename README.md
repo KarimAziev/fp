@@ -1,57 +1,57 @@
 # fp
 
-Collection of combinators to write Elisp code in point-free style.
-
-- [Macros](#macros)
-  - [fp--pipe (\&rest functions)](#fp--pipe-rest-functions)
-  - [fp--compose (\&rest functions)](#fp--compose-rest-functions)
-  - [fp--partial (fn \&rest args)](#fp--partial-fn-rest-args)
-  - [fp--rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
-  - [fp--and (\&rest functions)](#fp--and-rest-functions)
-  - [fp--or (\&rest functions)](#fp--or-rest-functions)
-  - [fp--converge (combine-fn \&rest
-    functions)](#fp--converge-combine-fn-rest-functions)
-- [Functions](#functions)
-  - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
-  - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
-  - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
-  - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
+  - [Macros](#macros)
+      - [fp–pipe (\&rest functions)](#fp--pipe-rest-functions)
+      - [fp–compose (\&rest functions)](#fp--compose-rest-functions)
+      - [fp–partial (fn \&rest args)](#fp--partial-fn-rest-args)
+      - [fp–rpartial (fn \&rest args)](#fp--rpartial-fn-rest-args)
+      - [fp–and (\&rest functions)](#fp--and-rest-functions)
+      - [fp–or (\&rest functions)](#fp--or-rest-functions)
+      - [fp–converge (combine-fn \&rest
+        functions)](#fp--converge-combine-fn-rest-functions)
+      - [fp–when (pred fn)](#fp--when-pred-fn)
+      - [fp–unless (pred fn)](#fp--unless-pred-fn)
+  - [Functions](#functions)
+      - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
+      - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
+      - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
+      - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
 
 ## Macros
 
-### fp--pipe (\&rest functions)
+### fp–pipe (\&rest functions)
 
 Return left-to-right composition from FUNCTIONS.
 
 **Example:**
 
-```elisp
+``` commonlisp
 (funcall (fp--pipe upcase split-string) "some string")
 ```
 
 **Result:**
 
-```elisp
+``` commonlisp
 ("SOME" "STRING")
 ```
 
-### fp--compose (\&rest functions)
+### fp–compose (\&rest functions)
 
 Return right-to-left composition from FUNCTIONS.
 
 **Example:**
 
-```elisp
+``` commonlisp
 (funcall (fp--compose split-string upcase) "some string")
 ```
 
 **Result:**
 
-```elisp
+``` commonlisp
 ("SOME" "STRING")
 ```
 
-### fp--partial (fn \&rest args)
+### fp–partial (fn \&rest args)
 
 Return a partial application of FN to left-hand ARGS.
 
@@ -61,17 +61,17 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-```elisp
+``` elisp
 (funcall (fp--partial > 3) 2)
 ```
 
 **Result:**
 
-```elisp
+``` elisp
 t
 ```
 
-### fp--rpartial (fn \&rest args)
+### fp–rpartial (fn \&rest args)
 
 Return a partial application of FN to right-hand ARGS.
 
@@ -81,52 +81,52 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-```elisp
+``` elisp
 (funcall (fp--rpartial > 3) 2)
 ```
 
 **Result:**
 
-```elisp
+``` elisp
 nil
 ```
 
 **Example:**
 
-```elisp
+``` elisp
 (funcall (fp--rpartial plist-get :name) '(:name "John" :age 30))
 ```
 
 **Result:**
 
-```elisp
+``` elisp
 "John"
 ```
 
-### fp--and (\&rest functions)
+### fp–and (\&rest functions)
 
 Return an unary function which call invoke FUNCTIONS until one of them
 yields nil.
 
 **Example:**
 
-```elisp
+``` elisp
 (funcall (fp--and numberp 1+) 30)
 ```
 
 **Result:**
 
-```elisp
+``` elisp
 31
 ```
 
-### fp--or (\&rest functions)
+### fp–or (\&rest functions)
 
 Return a function that FUNCTIONS until one of them yields non-nil.
 
 **Example:**
 
-```elisp
+``` elisp
 (seq-filter
  (fp--or numberp stringp)
  '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30)))
@@ -134,11 +134,11 @@ Return a function that FUNCTIONS until one of them yields non-nil.
 
 **Result:**
 
-```elisp
+``` elisp
 ("a" "b" "c" 34)
 ```
 
-### fp--converge (combine-fn \&rest functions)
+### fp–converge (combine-fn \&rest functions)
 
 Return a new function that accepts a converging function COMBINE-FN and
 a list of branching FUNCTIONS.
@@ -155,26 +155,79 @@ John, and `concat` applied with results.
 
 **Example:**
 
-```elisp
+``` commonlisp
 (funcall (fp--converge concat [upcase downcase]) "John")
 ```
 
 **Result:**
 
-```elisp
+``` commonlisp
 "JOHNjohn"
 ```
 
 **Example:**
 
-```elisp
+``` commonlisp
 (funcall (fp--converge concat upcase downcase) "John")
 ```
 
 **Result:**
 
-```elisp
+``` commonlisp
 "JOHNjohn"
+```
+
+### fp–when (pred fn)
+
+Return an unary function that invoke FN if result of calling PRED is
+non-nil.
+
+If result of PRED is nil, return the argument as is.
+
+Both PRED and FN called with one argument.
+
+``` commonlisp
+(defun truncate-maybe (str len)
+  "Truncate STR if longer LEN, otherwise return STR."
+  (funcall (fp--when
+            (fp--compose (fp--partial < len) length)
+            (fp--rpartial substring 0 len))
+           str))
+
+(list (truncate-maybe "long string" 4)
+      (truncate-maybe "lo" 4))
+```
+
+**Result:**
+
+``` commonlisp
+("long" "lo")
+```
+
+### fp–unless (pred fn)
+
+Return an unary function that invoke FN if result of calling PRED is
+non-nil.
+
+If result of PRED is nil, return the argument as is.
+
+Both PRED and FN called with one argument.
+
+``` commonlisp
+(defun divide-maybe (a b)
+  "Divide A and B unless B is 0."
+  (funcall (fp--unless zerop
+                       (fp--partial / a))
+           b))
+
+(list (divide-maybe 10 0)
+      (divide-maybe 10 2))
+```
+
+**Result**:
+
+``` commonlisp
+(0 5)
 ```
 
 ## Functions
@@ -185,13 +238,13 @@ Return left-to-right composition from FUNCTIONS.
 
 **Example:**
 
-```elisp
+``` commonlisp
 (funcall (fp-pipe #'upcase #'split-string) "some string")
 ```
 
 **Result:**
 
-```elisp
+``` commonlisp
 ("SOME" "STRING")
 ```
 
@@ -201,14 +254,14 @@ Return right-to-left composition from FUNCTIONS.
 
 **Example:**
 
-```elisp
+``` commonlisp
 (funcall (fp-compose #'split-string #'upcase) "some string")
 
 ```
 
 **Result:**
 
-```elisp
+``` commonlisp
 ("SOME" "STRING")
 ```
 
@@ -222,13 +275,13 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-```elisp
+``` elisp
 (funcall (fp-partial #'> 3) 2)
 ```
 
 **Result:**
 
-```elisp
+``` elisp
 t
 ```
 
@@ -242,12 +295,12 @@ are fixed at the values with which this function was called.
 
 **Example:**
 
-```elisp
+``` elisp
 (funcall (fp-rpartial #'> 3) 2)
 ```
 
 **Result:**
 
-```elisp
+``` elisp
 nil
 ```

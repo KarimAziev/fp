@@ -39,7 +39,6 @@
 ;;;###autoload
 (defmacro fp-pipe (&rest functions)
   "Return left-to-right composition from FUNCTIONS."
-  (declare (debug t))
   `(lambda (&rest args)
      ,@(let ((init-fn (pop functions)))
          (list
@@ -57,14 +56,12 @@
 ;;;###autoload
 (defmacro fp-compose (&rest functions)
   "Return right-to-left composition from FUNCTIONS."
-  (declare (debug t))
   `(fp-pipe ,@(reverse functions)))
 
 ;;* Macros
 ;;;###autoload
 (defmacro fp-or (&rest functions)
   "Return an unary function which invoke FUNCTIONS until first non-nil result."
-  (declare (debug t))
   `(lambda (it)
      (or
       ,@(mapcar (lambda (v)
@@ -76,7 +73,6 @@
 ;;;###autoload
 (defmacro fp-and (&rest functions)
   "Return an unary function which invoke FUNCTIONS until first nil result."
-  (declare (debug t))
   `(lambda (it)
      (and
       ,@(mapcar (lambda (v)
@@ -92,7 +88,6 @@
 ARGS is a list of the last N arguments to pass to FN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called."
-  (declare (debug t))
   `(lambda (&rest pre-args)
      ,(car (list (if (symbolp fn)
                      `(apply #',fn (append (list ,@args) pre-args))

@@ -35,10 +35,9 @@
 (when (version<= "28.1" emacs-version)
   (require 'fp-shortdoc))
 
-;;* Macros
-;;;###autoload
 (defmacro fp-pipe (&rest functions)
   "Return left-to-right composition from FUNCTIONS."
+  (declare (debug t) (pure t) (side-effect-free t))
   `(lambda (&rest args)
      ,@(let ((init-fn (pop functions)))
          (list
@@ -52,61 +51,53 @@
                `(apply #',init-fn args)
              `(apply ,init-fn args)))))))
 
-;;* Macros
-;;;###autoload
 (defmacro fp-compose (&rest functions)
   "Return right-to-left composition from FUNCTIONS."
+  (declare (debug t) (pure t) (side-effect-free t))
   `(fp-pipe ,@(reverse functions)))
 
-;;* Macros
-;;;###autoload
 (defmacro fp-or (&rest functions)
   "Return an unary function which invoke FUNCTIONS until first non-nil result."
-  `(lambda (it)
-     (or
-      ,@(mapcar (lambda (v)
-                  (if (symbolp v)
-                      `(,v it)
-                    `(funcall ,v it)))
-                functions))))
+  (declare (debug t) (pure t) (side-effect-free t))
+  `(lambda (it) (or
+            ,@(mapcar (lambda (v) (if (symbolp v)
+                                 `(,v it)
+                               `(funcall ,v it)))
+                      functions))))
 
-;;;###autoload
 (defmacro fp-and (&rest functions)
   "Return an unary function which invoke FUNCTIONS until first nil result."
-  `(lambda (it)
-     (and
-      ,@(mapcar (lambda (v)
-                  (if (symbolp v)
-                      `(,v it)
-                    `(funcall ,v it)))
-                functions))))
+  (declare (debug t) (pure t) (side-effect-free t))
+  `(lambda (it) (and
+            ,@(mapcar (lambda (v) (if (symbolp v)
+                                 `(,v it)
+                               `(funcall ,v it)))
+                      functions))))
 
-;;;###autoload
 (defmacro fp-partial (fn &rest args)
   "Return a partial application of FN to left-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called."
+  (declare (side-effect-free t))
   `(lambda (&rest pre-args)
      ,(car (list (if (symbolp fn)
                      `(apply #',fn (append (list ,@args) pre-args))
                    `(apply ,fn (append (list ,@args) pre-args)))))))
 
-;;;###autoload
 (defmacro fp-rpartial (fn &rest args)
   "Return a partial application of FN to right-hand ARGS.
 
 ARGS is a list of the last N arguments to pass to FN. The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called."
-  (declare (debug t))
+  (declare (side-effect-free t))
   `(lambda (&rest pre-args)
      ,(car (list (if (symbolp fn)
                      `(apply #',fn (append pre-args (list ,@args)))
                    `(apply ,fn (append pre-args (list ,@args))))))))
 
-;;;###autoload
 (defmacro fp-converge (combine-fn &rest functions)
   "Return a function that apply COMBINE-FN with results of branching FUNCTIONS.
 If first element of FUNCTIONS is vector, it will be used instead.
@@ -117,61 +108,57 @@ Example:
 \(funcall (fp-converge concat upcase downcase) \"John\")
 
 Result: \"JOHNjohn\"."
-  `(lambda (&rest args)
-     (apply
-      ,@(if (symbolp combine-fn)
-            `(#',combine-fn)
-          (list combine-fn))
-      (list
-       ,@(mapcar (lambda (v)
-                   (setq v (macroexpand v))
-                   (if (symbolp v)
-                       `(apply #',v args)
-                     `(apply ,v args)))
-                 (if (vectorp (car functions))
-                     (append (car functions) nil)
-                   functions))))))
+  `(lambda (&rest args) (apply
+                    ,@(if (symbolp combine-fn)
+                          `(#',combine-fn)
+                        (list combine-fn))
+                    (list
+                     ,@(mapcar (lambda (v)
+                                 (setq v (macroexpand v))
+                                 (if (symbolp v)
+                                     `(apply #',v args)
+                                   `(apply ,v args)))
+                               (if (vectorp (car functions))
+                                   (append (car functions) nil)
+                                 functions))))))
 
-;;;###autoload
 (defmacro fp-when (pred fn)
   "Return an unary function that invoke FN if result of calling PRED is non-nil.
 Both PRED and FN called with one argument.
 If result of PRED is nil, return the argument as is."
-  `(lambda (arg)
-     (if ,(if (symbolp pred)
-              `(,pred arg)
-            `(funcall ,pred arg))
-         ,(if (symbolp fn)
-              `(,fn arg)
-            `(funcall ,fn arg))
-       arg)))
+  `(lambda (arg) (if ,(if (symbolp pred)
+                     `(,pred arg)
+                   `(funcall ,pred arg))
+                ,(if (symbolp fn)
+                     `(,fn arg)
+                   `(funcall ,fn arg))
+              arg)))
 
-;;;###autoload
 (defmacro fp-unless (pred fn)
   "Return an unary function that invoke FN if result of calling PRED is nil.
 Both PRED and FN called with one argument.
 If result of PRED is non nil return the argument as is."
-  `(lambda (arg)
-     (if ,(if (symbolp pred)
-              `(,pred arg)
-            `(funcall ,pred arg))
-         arg
-       ,(if (symbolp fn)
-            `(,fn arg)
-          `(funcall ,fn arg)))))
+  `(lambda (arg) (if ,(if (symbolp pred)
+                     `(,pred arg)
+                   `(funcall ,pred arg))
+                arg
+              ,(if (symbolp fn)
+                   `(,fn arg)
+                 `(funcall ,fn arg)))))
 
-;;;###autoload
 (defmacro fp-const (value)
   "Return a function that always return VALUE.
 
 This function accepts any number of arguments, but ignores them."
+  (declare (pure t) (side-effect-free error-free))
   `(lambda (&rest _) ,value))
 
-;;;###autoload
 (defmacro fp-ignore-args (fn)
   "Return a function that invoke FN without args.
 
 This function accepts any number of arguments, but ignores them."
+  (declare
+   (indent defun))
   `(lambda (&rest _) ,(if (symbolp fn)
                      `(,fn)
                    `(funcall ,fn))))

@@ -1,28 +1,28 @@
 # fp
 
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-      - [Manually](#manually)
-      - [With use-package and straight](#with-use-package-and-straight)
-  - [Usage](#usage)
-      - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
-      - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
-      - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
-      - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
-      - [fp-and (\&rest functions)](#fp-and-rest-functions)
-      - [fp-or (\&rest functions)](#fp-or-rest-functions)
-      - [fp-converge (combine-fn \&rest
-        functions)](#fp-converge-combine-fn-rest-functions)
-      - [fp-use-with (combine-fn \&rest
-        functions)](#fp-use-with-combine-fn-rest-functions)
-      - [fp-when (pred fn)](#fp-when-pred-fn)
-      - [fp-unless (pred fn)](#fp-unless-pred-fn)
-      - [fp-const (value)](#fp-const-value)
-      - [fp-ignore-args (fn)](#fp-ignore-args-fn)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Manually](#manually)
+  - [With use-package and straight](#with-use-package-and-straight)
+- [Usage](#usage)
+  - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
+  - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
+  - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
+  - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
+  - [fp-and (\&rest functions)](#fp-and-rest-functions)
+  - [fp-or (\&rest functions)](#fp-or-rest-functions)
+  - [fp-converge (combine-fn \&rest
+    functions)](#fp-converge-combine-fn-rest-functions)
+  - [fp-use-with (combine-fn \&rest
+    functions)](#fp-use-with-combine-fn-rest-functions)
+  - [fp-when (pred fn)](#fp-when-pred-fn)
+  - [fp-unless (pred fn)](#fp-unless-pred-fn)
+  - [fp-const (value)](#fp-const-value)
+  - [fp-ignore-args (fn)](#fp-ignore-args-fn)
 
 ## Requirements
 
-  - Emacs \>= 25.1
+- Emacs \>= 26.1
 
 ## Installation
 
@@ -30,7 +30,7 @@
 
 Download repository and it to your load path in your init file:
 
-``` elisp
+```elisp
 
 (add-to-list 'load-path "/path/to/fp)
 
@@ -40,13 +40,10 @@ Download repository and it to your load path in your init file:
 
 ### With use-package and straight
 
-``` elisp
+```elisp
 
 (use-package fp
-    :straight (fp
-                   :repo "KarimAziev/fp"
-                   :type git
-                   :host github))
+    :straight (:repo "KarimAziev/fp" :type git :host github))
 
 ```
 
@@ -58,13 +55,13 @@ Return left-to-right composition from `functions`.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp-pipe upcase split-string) "some string")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("SOME" "STRING")
 ```
 
@@ -74,13 +71,13 @@ Return right-to-left composition from `functions`.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp-compose split-string upcase) "some string")
 ```
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("SOME" "STRING")
 ```
 
@@ -94,13 +91,13 @@ arguments are fixed at the values with which this function was called.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp-partial > 3) 2)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 t
 ```
 
@@ -114,25 +111,25 @@ arguments are fixed at the values with which this function was called.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp-rpartial > 3) 2)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 nil
 ```
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp-rpartial plist-get :name) '(:name "John" :age 30))
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 "John"
 ```
 
@@ -143,13 +140,13 @@ yields nil.
 
 **Example:**
 
-``` elisp
+```elisp
 (funcall (fp-and numberp 1+) 30)
 ```
 
 **Result:**
 
-``` elisp
+```elisp
 31
 ```
 
@@ -159,7 +156,7 @@ Return a function that `functions` until one of them yields non-nil.
 
 **Example:**
 
-``` elisp
+```elisp
 (seq-filter
  (fp-or numberp stringp)
  '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30)))
@@ -167,7 +164,7 @@ Return a function that `functions` until one of them yields non-nil.
 
 **Result:**
 
-``` elisp
+```elisp
 ("a" "b" "c" 34)
 ```
 
@@ -186,7 +183,7 @@ John, and `concat` applied with results.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp-converge concat [upcase downcase]) "John")
 ⇒ "JOHNjohn"
 ```
@@ -195,7 +192,7 @@ If first element of `functions` is a vector, it will be used instead.
 
 **Example:**
 
-``` commonlisp
+```elisp
 (funcall (fp-converge concat upcase downcase) "John")
 ⇒ "JOHNjohn"
 ```
@@ -209,7 +206,7 @@ called with **one** argument at the same index .
 
 **Example:**
 
-``` commonlisp
+```elisp
 
 (funcall (fp-use-with concat [upcase downcase]) "hello " "world")
   ;;  ⇒ "HELLO world"
@@ -217,7 +214,7 @@ called with **one** argument at the same index .
 
 If first element of `functions` is a vector, it will be used instead.
 
-``` commonlisp
+```elisp
 
 (funcall (fp-use-with concat upcase downcase) "hello " "world")
 ;;   ⇒ "HELLO world"
@@ -232,7 +229,7 @@ If result of PRED is nil, return the argument as is.
 
 Both PRED and `fn` called with one argument.
 
-``` commonlisp
+```elisp
 (defun truncate-maybe (str len)
   "Truncate STR if longer LEN, otherwise return STR."
   (funcall (fp-when
@@ -246,7 +243,7 @@ Both PRED and `fn` called with one argument.
 
 **Result:**
 
-``` commonlisp
+```elisp
 ("long" "lo")
 ```
 
@@ -259,7 +256,7 @@ If result of PRED is nil, return the argument as is.
 
 Both PRED and `fn` called with one argument.
 
-``` commonlisp
+```elisp
 (defun divide-maybe (a b)
   "Divide A and B unless B is 0."
   (funcall (fp-unless zerop
@@ -272,7 +269,7 @@ Both PRED and `fn` called with one argument.
 
 **Result**:
 
-``` commonlisp
+```elisp
 (0 5)
 ```
 
@@ -282,13 +279,13 @@ Return a function that always return `value.`
 
 This function accepts any number of arguments, but ignores them.
 
-``` commonlisp
+```elisp
 (funcall (fp-const 2) 4)
 ```
 
 **Result**:
 
-``` commonlisp
+```elisp
 2
 ```
 
@@ -298,7 +295,7 @@ Return a function that invoke `fn` without args.
 
 This function accepts any number of arguments, but ignores them.
 
-``` commonlisp
+```elisp
 (defun my-fn ()
   "Show message hello world."
   (message "Hello world"))
@@ -308,6 +305,6 @@ This function accepts any number of arguments, but ignores them.
 
 **Result**:
 
-``` commonlisp
+```elisp
 "Hello world"
 ```

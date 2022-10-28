@@ -22,7 +22,7 @@
 
 ** Requirements
 
-+ Emacs >= 25.1
++ Emacs >= 26.1
 
 ** Installation
 
@@ -43,10 +43,7 @@ Download repository and it to your load path in your init file:
 #+begin_src elisp :eval no
 
 (use-package fp
-	:straight (fp
-			       :repo "KarimAziev/fp"
-			       :type git
-			       :host github))
+	:straight (:repo "KarimAziev/fp" :type git :host github))
 
 #+end_src
 ** Usage

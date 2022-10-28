@@ -14,6 +14,7 @@
     - [[#fp-and-rest-functions][fp-and (&rest functions)]]
     - [[#fp-or-rest-functions][fp-or (&rest functions)]]
     - [[#fp-converge-combine-fn-rest-functions][fp-converge (combine-fn &rest functions)]]
+    - [[#fp-use-with-combine-fn-rest-functions][fp-use-with (combine-fn &rest functions)]]
     - [[#fp-when-pred-fn][fp-when (pred fn)]]
     - [[#fp-unless-pred-fn][fp-unless (pred fn)]]
     - [[#fp-const-value][fp-const (value)]]
@@ -95,6 +96,7 @@ t
 #+end_src
 
 *** fp-rpartial (fn &rest args)
+
 Return a partial application of =fn= to right-hand ~args~.
 
 ~args~ is a list of the last N arguments to pass to =fn=. The result is a new
@@ -155,29 +157,44 @@ Return a new function that accepts a converging function COMBINE-FN and a list o
 
 When invoked, this new function is applied to some arguments, and each branching function is applied to those same arguments. The results of each branching function are passed as arguments to the converging function to produce the return value.
 
-If first element of ~functions~ is a vector, it will be used instead.
-
 For example here both ~upcase~ and ~downcase~ applied with argument John, and ~concat~ applied with results.
 
 *Example:*
 #+begin_src emacs-lisp
 (funcall (fp-converge concat [upcase downcase]) "John")
+⇒ "JOHNjohn"
 #+end_src
 
-*Result:*
-#+begin_src emacs-lisp
-"JOHNjohn"
-#+end_src
+If first element of ~functions~ is a vector, it will be used instead.
 
 *Example:*
-#+begin_src emacs-lisp :results code
+#+begin_src emacs-lisp
 (funcall (fp-converge concat upcase downcase) "John")
+⇒ "JOHNjohn"
 #+end_src
 
-*Result:*
-#+begin_src emacs-lisp
-"JOHNjohn"
+
+*** (fp-use-with combine-fn &rest functions)
+
+  Return a function with the arity of length ~functions~.
+
+  This function will apply ~combine-fn~ with results of every function called with *one* argument at the same index .
+
+  *Example:*
+  #+begin_src emacs-lisp
+
+(funcall (fp-use-with concat [upcase downcase]) "hello " "world")
+  ;;  ⇒ "HELLO world"
 #+end_src
+
+  If first element of ~functions~ is a vector, it will be used instead.
+
+ #+begin_src emacs-lisp
+
+(funcall (fp-use-with concat upcase downcase) "hello " "world")
+;;   ⇒ "HELLO world"
+#+end_src
+
 
 *** fp-when (pred fn)
 Return an unary function that invoke =fn= if result of calling PRED is non-nil.

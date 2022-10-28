@@ -1,4 +1,4 @@
-;;; fp.el --- Collection of combinators for Emacs Lisp  -*- lexical-binding: t; -*-
+;;; fp.el --- Collection of combinators for Emacs Lisp -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2022 Karim Aziiev <karim.aziiev@gmail.com>
 
@@ -6,7 +6,7 @@
 ;; URL: https://github.com/KarimAziev/fp
 ;; Keywords: lisp
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "26.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -121,6 +121,40 @@ Result: \"JOHNjohn\"."
                                (if (vectorp (car functions))
                                    (append (car functions) nil)
                                  functions))))))
+
+(defmacro fp-use-with (combine-fn &rest functions)
+  "Return a function with the arity of length FUNCTIONS.
+Every branching function will be called with argument at the same index,
+and finally COMBINE-FN will be applied on the supplied values.
+
+Example:
+
+\(funcall (fp-use-with concat [upcase downcase]) \"hello \" \"world\")
+
+
+If first element of FUNCTIONS is vector, it will be used instead:
+
+\(funcall (fp-use-with + [(fp-partial 1+) identity]) 2 2)
+=> Result: 5
+
+\(funcall (fp-use-with + (fp-partial 1+) identity) 2 2)
+=> Result: 5
+
+=> Result: \"HELLO world\"
+."
+  `(lambda (&rest args) (apply
+                    ,@(if (symbolp combine-fn)
+                          `(#',combine-fn)
+                        (list combine-fn))
+                    (list
+                     ,@(seq-map-indexed (lambda (v idx)
+                                          (setq v (macroexpand v))
+                                          (if (symbolp v)
+                                              `(funcall #',v (nth ,idx args))
+                                            `(funcall ,v (nth ,idx args))))
+                                        (if (vectorp (car functions))
+                                            (append (car functions) nil)
+                                          functions))))))
 
 (defmacro fp-when (pred fn)
   "Return an unary function that invoke FN if result of calling PRED is non-nil.

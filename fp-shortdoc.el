@@ -64,9 +64,13 @@
     (fp-const
      :eval (funcall (fp-const 2) 4))
     (fp-ignore-args
-     :eval (funcall (fp-ignore-args (lambda (&optional a)
-                                      (numberp a)))
-                    4))))
+      :eval (funcall (fp-ignore-args (lambda (&optional a)
+                                       (numberp a)))
+                     4))
+    (fp-use-with
+     :eval (funcall (fp-use-with concat [upcase downcase]) "hello " "world")
+     :eval (funcall (fp-use-with + [(fp-partial 1+) identity]) 2 2)
+     :eval (funcall (fp-use-with + (fp-partial 1+) identity) 2 2))))
 
 (eval-when-compile
   (when (version< emacs-version "28.1")

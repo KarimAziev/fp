@@ -13,6 +13,8 @@
       - [fp-or (\&rest functions)](#fp-or-rest-functions)
       - [fp-converge (combine-fn \&rest
         functions)](#fp-converge-combine-fn-rest-functions)
+      - [fp-use-with (combine-fn \&rest
+        functions)](#fp-use-with-combine-fn-rest-functions)
       - [fp-when (pred fn)](#fp-when-pred-fn)
       - [fp-unless (pred fn)](#fp-unless-pred-fn)
       - [fp-const (value)](#fp-const-value)
@@ -56,13 +58,13 @@ Return left-to-right composition from `functions`.
 
 **Example:**
 
-``` elisp
+``` commonlisp
 (funcall (fp-pipe upcase split-string) "some string")
 ```
 
 **Result:**
 
-``` elisp
+``` commonlisp
 ("SOME" "STRING")
 ```
 
@@ -72,13 +74,13 @@ Return right-to-left composition from `functions`.
 
 **Example:**
 
-``` elisp
+``` commonlisp
 (funcall (fp-compose split-string upcase) "some string")
 ```
 
 **Result:**
 
-``` elisp
+``` commonlisp
 ("SOME" "STRING")
 ```
 
@@ -179,33 +181,46 @@ branching function is applied to those same arguments. The results of
 each branching function are passed as arguments to the converging
 function to produce the return value.
 
-If first element of `functions` is a vector, it will be used instead.
-
 For example here both `upcase` and `downcase` applied with argument
 John, and `concat` applied with results.
 
 **Example:**
 
-``` elisp
+``` commonlisp
 (funcall (fp-converge concat [upcase downcase]) "John")
+⇒ "JOHNjohn"
 ```
 
-**Result:**
-
-``` elisp
-"JOHNjohn"
-```
+If first element of `functions` is a vector, it will be used instead.
 
 **Example:**
 
-``` elisp
+``` commonlisp
 (funcall (fp-converge concat upcase downcase) "John")
+⇒ "JOHNjohn"
 ```
 
-**Result:**
+### (fp-use-with combine-fn \&rest functions)
 
-``` elisp
-"JOHNjohn"
+Return a function with the arity of length `functions`.
+
+This function will apply `combine-fn` with results of every function
+called with **one** argument at the same index .
+
+**Example:**
+
+``` commonlisp
+
+(funcall (fp-use-with concat [upcase downcase]) "hello " "world")
+  ;;  ⇒ "HELLO world"
+```
+
+If first element of `functions` is a vector, it will be used instead.
+
+``` commonlisp
+
+(funcall (fp-use-with concat upcase downcase) "hello " "world")
+;;   ⇒ "HELLO world"
 ```
 
 ### fp-when (pred fn)
@@ -217,7 +232,7 @@ If result of PRED is nil, return the argument as is.
 
 Both PRED and `fn` called with one argument.
 
-``` elisp
+``` commonlisp
 (defun truncate-maybe (str len)
   "Truncate STR if longer LEN, otherwise return STR."
   (funcall (fp-when
@@ -231,7 +246,7 @@ Both PRED and `fn` called with one argument.
 
 **Result:**
 
-``` elisp
+``` commonlisp
 ("long" "lo")
 ```
 
@@ -244,7 +259,7 @@ If result of PRED is nil, return the argument as is.
 
 Both PRED and `fn` called with one argument.
 
-``` elisp
+``` commonlisp
 (defun divide-maybe (a b)
   "Divide A and B unless B is 0."
   (funcall (fp-unless zerop
@@ -257,7 +272,7 @@ Both PRED and `fn` called with one argument.
 
 **Result**:
 
-``` elisp
+``` commonlisp
 (0 5)
 ```
 
@@ -267,13 +282,13 @@ Return a function that always return `value.`
 
 This function accepts any number of arguments, but ignores them.
 
-``` elisp
+``` commonlisp
 (funcall (fp-const 2) 4)
 ```
 
 **Result**:
 
-``` elisp
+``` commonlisp
 2
 ```
 
@@ -283,7 +298,7 @@ Return a function that invoke `fn` without args.
 
 This function accepts any number of arguments, but ignores them.
 
-``` elisp
+``` commonlisp
 (defun my-fn ()
   "Show message hello world."
   (message "Hello world"))
@@ -293,6 +308,6 @@ This function accepts any number of arguments, but ignores them.
 
 **Result**:
 
-``` elisp
+``` commonlisp
 "Hello world"
 ```

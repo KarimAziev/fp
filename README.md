@@ -1,7 +1,7 @@
 # fp
 
-`fp` is a collection of combinators to write in point-free style (also
-called Tacit programming).
+A collection of combinators to write in point-free style (also called
+Tacit programming).
 
 # Table of Contents
 
@@ -264,7 +264,7 @@ Return a function that apply `functions` as cond clauses. Functions
 should be a vector of \[predicate transformer\] pairs or a list
 (predicate transformer).
 
-```commonlisp
+```elisp
 (funcall (fp-cond
           [stringp upcase]
           [symbolp symbol-name]

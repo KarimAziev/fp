@@ -1,6 +1,6 @@
 
 * fp
-=fp= is a collection of combinators to write in point-free style (also called Tacit programming).
+A collection of combinators to write in point-free style (also called Tacit programming).
 
 * Table of Contents                                          :TOC_4:QUOTE:
 #+BEGIN_QUOTE
@@ -240,7 +240,7 @@ Return a function that negates the result of a function ~fn~.
 *** fp-cond  (&rest functions)
 Return a function that apply ~functions~ as cond clauses. Functions should be a vector of [predicate transformer] pairs or a list (predicate transformer).
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (funcall (fp-cond
           [stringp upcase]
           [symbolp symbol-name]

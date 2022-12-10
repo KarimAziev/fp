@@ -31,45 +31,56 @@
 
 ;;; Code:
 
+(defun fp--expand (init-fn)
+  "Expand apply.
+INIT-FN is ."
+  (setq init-fn (macroexpand init-fn))
+  (if (symbolp init-fn)
+      `(#',init-fn)
+    `(,init-fn)))
 
 (defmacro fp-pipe (&rest functions)
   "Return left-to-right composition from FUNCTIONS."
-  (declare (debug t) (pure t) (side-effect-free t))
+  (declare (debug t)
+           (pure t)
+           (side-effect-free t))
   `(lambda (&rest args)
      ,@(let ((init-fn (pop functions)))
          (list
           (seq-reduce
            (lambda (acc fn)
-             (if (symbolp fn)
-                 `(funcall #',fn ,acc)
-               `(funcall ,fn ,acc)))
+             `(funcall ,@(fp--expand fn) ,acc))
            functions
-           (if (symbolp init-fn)
-               `(apply #',init-fn args)
-             `(apply ,init-fn args)))))))
+           `(apply ,@(fp--expand init-fn) args))))))
 
 (defmacro fp-compose (&rest functions)
   "Return right-to-left composition from FUNCTIONS."
-  (declare (debug t) (pure t) (side-effect-free t))
+  (declare (debug t)
+           (pure t)
+           (side-effect-free t))
   `(fp-pipe ,@(reverse functions)))
 
 (defmacro fp-or (&rest functions)
   "Return an unary function which invoke FUNCTIONS until first non-nil result."
-  (declare (debug t) (pure t) (side-effect-free t))
-  `(lambda (it) (or
-            ,@(mapcar (lambda (v) (if (symbolp v)
-                                 `(,v it)
-                               `(funcall ,v it)))
-                      functions))))
+  (declare (debug t)
+           (pure t)
+           (side-effect-free t))
+  `(lambda (it)
+     (or
+      ,@(mapcar (lambda (v)
+                  `(funcall ,@(fp--expand v) it))
+                functions))))
 
 (defmacro fp-and (&rest functions)
   "Return an unary function which invoke FUNCTIONS until first nil result."
-  (declare (debug t) (pure t) (side-effect-free t))
-  `(lambda (it) (and
-            ,@(mapcar (lambda (v) (if (symbolp v)
-                                 `(,v it)
-                               `(funcall ,v it)))
-                      functions))))
+  (declare (debug t)
+           (pure t)
+           (side-effect-free t))
+  `(lambda (it)
+     (and
+      ,@(mapcar (lambda (v)
+                  `(funcall ,@(fp--expand v) it))
+                functions))))
 
 (defmacro fp-partial (fn &rest args)
   "Return a partial application of FN to left-hand ARGS.
@@ -79,9 +90,9 @@ function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called."
   (declare (side-effect-free t))
   `(lambda (&rest pre-args)
-     ,(car (list (if (symbolp fn)
-                     `(apply #',fn (append (list ,@args) pre-args))
-                   `(apply ,fn (append (list ,@args) pre-args)))))))
+     ,(car (list
+            `(apply ,@(fp--expand fn)
+                    (append (list ,@args) pre-args))))))
 
 (defmacro fp-rpartial (fn &rest args)
   "Return a partial application of FN to right-hand ARGS.
@@ -91,9 +102,9 @@ function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called."
   (declare (side-effect-free t))
   `(lambda (&rest pre-args)
-     ,(car (list (if (symbolp fn)
-                     `(apply #',fn (append pre-args (list ,@args)))
-                   `(apply ,fn (append pre-args (list ,@args))))))))
+     ,(car (list
+            `(apply ,@(fp--expand fn)
+                    (append pre-args (list ,@args)))))))
 
 (defmacro fp-converge (combine-fn &rest functions)
   "Return a function that apply COMBINE-FN with results of branching FUNCTIONS.
@@ -105,19 +116,15 @@ Example:
 \(funcall (fp-converge concat upcase downcase) \"John\")
 
 Result: \"JOHNjohn\"."
-  `(lambda (&rest args) (apply
-                    ,@(if (symbolp combine-fn)
-                          `(#',combine-fn)
-                        (list combine-fn))
-                    (list
-                     ,@(mapcar (lambda (v)
-                                 (setq v (macroexpand v))
-                                 (if (symbolp v)
-                                     `(apply #',v args)
-                                   `(apply ,v args)))
-                               (if (vectorp (car functions))
-                                   (append (car functions) nil)
-                                 functions))))))
+  `(lambda (&rest args)
+     (apply
+      ,@(fp--expand combine-fn)
+      (list
+       ,@(mapcar (lambda (v)
+                   `(apply ,@(fp--expand v) args))
+                 (if (vectorp (car functions))
+                     (append (car functions) nil)
+                   functions))))))
 
 (defmacro fp-use-with (combine-fn &rest functions)
   "Return a function with the arity of length FUNCTIONS.
@@ -139,49 +146,42 @@ If first element of FUNCTIONS is vector, it will be used instead:
 
 => Result: \"HELLO world\"
 ."
-  `(lambda (&rest args) (apply
-                    ,@(if (symbolp combine-fn)
-                          `(#',combine-fn)
-                        (list combine-fn))
-                    (list
-                     ,@(seq-map-indexed (lambda (v idx)
-                                          (setq v (macroexpand v))
-                                          (if (symbolp v)
-                                              `(funcall #',v (nth ,idx args))
-                                            `(funcall ,v (nth ,idx args))))
-                                        (if (vectorp (car functions))
-                                            (append (car functions) nil)
-                                          functions))))))
+  `(lambda (&rest args)
+     (apply
+      ,@(fp--expand combine-fn)
+      (list
+       ,@(seq-map-indexed (lambda (v idx)
+                            `(funcall ,@(fp--expand v)
+                                      (nth ,idx args)))
+                          (if (vectorp (car functions))
+                              (append (car functions) nil)
+                            functions))))))
 
 (defmacro fp-when (pred fn)
   "Return an unary function that invoke FN if result of calling PRED is non-nil.
 Both PRED and FN called with one argument.
 If result of PRED is nil, return the argument as is."
-  `(lambda (arg) (if ,(if (symbolp pred)
-                     `(,pred arg)
-                   `(funcall ,pred arg))
-                ,(if (symbolp fn)
-                     `(,fn arg)
-                   `(funcall ,fn arg))
-              arg)))
+  `(lambda (arg)
+     (if
+         (funcall ,@(fp--expand pred) arg)
+         (funcall ,@(fp--expand fn) arg)
+       arg)))
 
 (defmacro fp-unless (pred fn)
   "Return an unary function that invoke FN if result of calling PRED is nil.
 Both PRED and FN called with one argument.
 If result of PRED is non nil return the argument as is."
-  `(lambda (arg) (if ,(if (symbolp pred)
-                     `(,pred arg)
-                   `(funcall ,pred arg))
-                arg
-              ,(if (symbolp fn)
-                   `(,fn arg)
-                 `(funcall ,fn arg)))))
+  `(lambda (arg)
+     (if (funcall ,@(fp--expand pred) arg)
+         arg
+       (funcall ,@(fp--expand fn) arg))))
 
 (defmacro fp-const (value)
   "Return a function that always return VALUE.
 
 This function accepts any number of arguments, but ignores them."
-  (declare (pure t) (side-effect-free error-free))
+  (declare (pure t)
+           (side-effect-free error-free))
   `(lambda (&rest _) ,value))
 
 (defmacro fp-ignore-args (fn)
@@ -190,9 +190,8 @@ This function accepts any number of arguments, but ignores them."
 This function accepts any number of arguments, but ignores them."
   (declare
    (indent defun))
-  `(lambda (&rest _) ,(if (symbolp fn)
-                     `(,fn)
-                   `(funcall ,fn))))
+  `(lambda (&rest _)
+     (funcall ,@(fp--expand fn))))
 
 (when (version<= "28.1" emacs-version)
   (eval-and-compile
@@ -207,22 +206,21 @@ This function accepts any number of arguments, but ignores them."
         (fp-partial
          :eval (funcall (fp-rpartial > 3) 2))
         (fp-rpartial
-         :eval (funcall (fp-rpartial plist-get :name) '(:name "John"
-                                                              :age 30)))
+         :eval (funcall (fp-rpartial plist-get :name) '(:name "John" :age 30)))
         (fp-and
          :eval (funcall (fp-and numberp 1+) 30))
         (fp-or
          :eval (seq-filter
                 (fp-or numberp stringp)
-                '("a" "b" (0 1 2 3 4) "c" 34 (:name "John"
-                                                    :age 30))))
+                '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30))))
         (fp-converge
          :eval (funcall (fp-converge concat [upcase downcase]) "John")
          :eval (funcall (fp-converge concat upcase downcase) "John"))
         (fp-when
          :eval
-         (funcall (fp-when (fp-compose (fp-partial < 4) length)
-                           (fp-rpartial substring 0 4))
+         (funcall (fp-when
+                   (fp-compose (fp-partial < 4) length)
+                   (fp-rpartial substring 0 4))
                   "long string"))
         (fp-unless
          :eval (funcall (fp-unless zerop
@@ -231,8 +229,8 @@ This function accepts any number of arguments, but ignores them."
         (fp-const
          :eval (funcall (fp-const 2) 4))
         (fp-ignore-args
-          :eval (funcall (fp-ignore-args (lambda (&optional a)
-                                           (numberp a)))
+          :eval (funcall (fp-ignore-args
+                           (lambda (&optional a) (numberp a)))
                          4))
         (fp-use-with
          :eval (funcall (fp-use-with concat [upcase downcase]) "hello " "world")

@@ -1,7 +1,9 @@
 #+OPTIONS: toc:4 num:nil
 
+=fp= is a library of combinators to write in point-free style (also called Tacit programming).
 
-* fp
+* fp                                                               :TOC_4_gh:QUOTE:
+#+BEGIN_QUOTE
   - [[#requirements][Requirements]]
   - [[#installation][Installation]]
     - [[#manually][Manually]]
@@ -19,6 +21,8 @@
     - [[#fp-unless-pred-fn][fp-unless (pred fn)]]
     - [[#fp-const-value][fp-const (value)]]
     - [[#fp-ignore-args-fn][fp-ignore-args (fn)]]
+    - [[#fp-not-fn][fp-not (fn)]]
+#+END_QUOTE
 
 ** Requirements
 
@@ -29,7 +33,6 @@
 *** Manually
 
 Download repository and it to your load path in your init file:
-
 #+begin_src elisp :eval no
 
 (add-to-list 'load-path "/path/to/fp)
@@ -171,7 +174,7 @@ If first element of ~functions~ is a vector, it will be used instead.
 #+end_src
 
 
-*** (fp-use-with combine-fn &rest functions)
+*** fp-use-with (combine-fn &rest functions)
 
   Return a function with the arity of length ~functions~.
 
@@ -273,3 +276,14 @@ This function accepts any number of arguments, but ignores them.
 #+begin_src emacs-lisp
 "Hello world"
 #+end_src
+
+*** fp-not (fn)
+
+Return a function that negates the result of a function ~fn~.
+
+#+begin_src emacs-lisp
+
+(funcall (fp-not stringp) 4)
+;;   ⇒ t
+#+end_src
+

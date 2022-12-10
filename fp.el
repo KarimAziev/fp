@@ -193,6 +193,10 @@ This function accepts any number of arguments, but ignores them."
   `(lambda (&rest _)
      (funcall ,@(fp--expand fn))))
 
+(defmacro fp-not (fn)
+  "Return a function which firstly invoke FN and then not."
+  `(fp-compose not ,fn))
+
 (when (version<= "28.1" emacs-version)
   (eval-and-compile
     (require 'shortdoc nil t)

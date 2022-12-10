@@ -1,9 +1,10 @@
-#+OPTIONS: toc:4 num:nil
 
-=fp= is a library of combinators to write in point-free style (also called Tacit programming).
+* fp
+=fp= is a collection of combinators to write in point-free style (also called Tacit programming).
 
-* fp                                                               :TOC_4_gh:QUOTE:
+* Table of Contents                                          :TOC_4:QUOTE:
 #+BEGIN_QUOTE
+- [[#fp][fp]]
   - [[#requirements][Requirements]]
   - [[#installation][Installation]]
     - [[#manually][Manually]]
@@ -22,6 +23,7 @@
     - [[#fp-const-value][fp-const (value)]]
     - [[#fp-ignore-args-fn][fp-ignore-args (fn)]]
     - [[#fp-not-fn][fp-not (fn)]]
+    - [[#fp-cond--rest-functions][fp-cond  (&rest functions)]]
 #+END_QUOTE
 
 ** Requirements
@@ -34,48 +36,36 @@
 
 Download repository and it to your load path in your init file:
 #+begin_src elisp :eval no
-
 (add-to-list 'load-path "/path/to/fp)
-
 (require 'fp)
-
 #+end_src
 
 *** With use-package and straight
 
 #+begin_src elisp :eval no
-
-(use-package fp
-	:straight (:repo "KarimAziev/fp" :type git :host github))
-
+(use-package fp :straight (:repo "KarimAziev/fp" :type git :host github))
 #+end_src
+
 ** Usage
 *** fp-pipe (&rest functions)
 
 Return left-to-right composition from ~functions~.
 
 *Example:*
-#+begin_src emacs-lisp :results raw :results code
+#+begin_src elisp :results raw :results code
 (funcall (fp-pipe upcase split-string) "some string")
+⇒ ("SOME" "STRING")
 #+end_src
 
-*Result:*
-#+begin_src emacs-lisp
-("SOME" "STRING")
-#+end_src
 
 *** fp-compose (&rest functions)
 
 Return right-to-left composition from ~functions~.
 
 *Example:*
-#+begin_src emacs-lisp
+#+begin_src elisp
 (funcall (fp-compose split-string upcase) "some string")
-#+end_src
-
-*Result:*
-#+begin_src emacs-lisp
-("SOME" "STRING")
+⇒ ("SOME" "STRING")
 #+end_src
 
 *** fp-partial (fn &rest args)
@@ -87,13 +77,9 @@ at the values with which this function was called.
 
 *Example:*
 #+begin_src elisp
-(funcall (fp-partial > 3) 2)
+(funcall (fp-partial > 3) 2) ;; ⇒ t
 #+end_src
 
-*Result:*
-#+begin_src elisp
-t
-#+end_src
 
 *** fp-rpartial (fn &rest args)
 
@@ -105,36 +91,19 @@ at the values with which this function was called.
 
 *Example:*
 #+begin_src elisp
-(funcall (fp-rpartial > 3) 2)
-#+end_src
-
-*Result:*
-#+begin_src elisp
-nil
-#+end_src
-
-*Example:*
-#+begin_src elisp
 (funcall (fp-rpartial plist-get :name) '(:name "John" :age 30))
+;; ⇒ "John"
 #+end_src
 
-*Result:*
-#+begin_src elisp
-"John"
-#+end_src
 
 *** fp-and (&rest functions)
-Return an unary function which call invoke ~functions~ until one of them yields nil.
+Return an unary function which call ~functions~ until one of them yields nil.
 
 *Example:*
 #+begin_src elisp
-(funcall (fp-and numberp 1+) 30)
+(funcall (fp-and numberp 1+) 30) ;; ⇒ 31
 #+end_src
 
-*Result:*
-#+begin_src elisp
-31
-#+end_src
 
 *** fp-or (&rest functions)
 Return a function that ~functions~ until one of them yields non-nil.
@@ -144,12 +113,10 @@ Return a function that ~functions~ until one of them yields non-nil.
 (seq-filter
  (fp-or numberp stringp)
  '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30)))
+
+;; ⇒ ("a" "b" "c" 34)
 #+end_src
 
-*Result:*
-#+begin_src elisp
-("a" "b" "c" 34)
-#+end_src
 
 *** fp-converge (combine-fn &rest functions)
 
@@ -160,28 +127,27 @@ When invoked, this new function is applied to some arguments, and each branching
 For example here both ~upcase~ and ~downcase~ applied with argument John, and ~concat~ applied with results.
 
 *Example:*
-#+begin_src emacs-lisp
+#+begin_src elisp
 (funcall (fp-converge concat [upcase downcase]) "John")
-⇒ "JOHNjohn"
+;; ⇒ "JOHNjohn"
 #+end_src
 
 If first element of ~functions~ is a vector, it will be used instead.
 
 *Example:*
-#+begin_src emacs-lisp
+#+begin_src elisp
 (funcall (fp-converge concat upcase downcase) "John")
-⇒ "JOHNjohn"
+;; ⇒ "JOHNjohn"
 #+end_src
 
 
 *** fp-use-with (combine-fn &rest functions)
 
   Return a function with the arity of length ~functions~.
-
   This function will apply ~combine-fn~ with results of every function called with *one* argument at the same index .
 
   *Example:*
-  #+begin_src emacs-lisp
+  #+begin_src elisp
 
 (funcall (fp-use-with concat [upcase downcase]) "hello " "world")
   ;;  ⇒ "HELLO world"
@@ -189,7 +155,7 @@ If first element of ~functions~ is a vector, it will be used instead.
 
   If first element of ~functions~ is a vector, it will be used instead.
 
- #+begin_src emacs-lisp
+ #+begin_src elisp
 
 (funcall (fp-use-with concat upcase downcase) "hello " "world")
 ;;   ⇒ "HELLO world"
@@ -197,13 +163,13 @@ If first element of ~functions~ is a vector, it will be used instead.
 
 
 *** fp-when (pred fn)
-Return an unary function that invoke =fn= if result of calling PRED is non-nil.
+Return an unary function that invoke =fn= if result of calling ~pred~ is non-nil.
 
-If result of PRED is nil, return the argument as is.
+If result of ~pred~ is nil, return the argument as is.
 
-Both PRED and =fn= called with one argument.
+Both ~pred~ and =fn= called with one argument.
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun truncate-maybe (str len)
   "Truncate STR if longer LEN, otherwise return STR."
   (funcall (fp-when
@@ -213,21 +179,18 @@ Both PRED and =fn= called with one argument.
 
 (list (truncate-maybe "long string" 4)
       (truncate-maybe "lo" 4))
-#+end_src
 
-*Result:*
-#+begin_src emacs-lisp
-("long" "lo")
+;; ⇒ ("long" "lo")
 #+end_src
 
 *** fp-unless (pred fn)
-Return an unary function that invoke =fn= if result of calling PRED is non-nil.
+Return an unary function that invoke =fn= if result of calling ~pred~ is non-nil.
 
-If result of PRED is nil, return the argument as is.
+If result of ~pred~ is nil, return the argument as is.
 
-Both PRED and =fn= called with one argument.
+Both ~pred~ and =fn= called with one argument.
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun divide-maybe (a b)
   "Divide A and B unless B is 0."
   (funcall (fp-unless zerop
@@ -236,11 +199,8 @@ Both PRED and =fn= called with one argument.
 
 (list (divide-maybe 10 0)
       (divide-maybe 10 2))
-#+end_src
 
-*Result*:
-#+begin_src emacs-lisp
-(0 5)
+;; ⇒ '(0 5)
 #+end_src
 
 *** fp-const (value)
@@ -249,14 +209,10 @@ Return a function that always return ~value.~
 
 This function accepts any number of arguments, but ignores them.
 
-#+begin_src emacs-lisp
-(funcall (fp-const 2) 4)
+#+begin_src elisp
+(funcall (fp-const 2) 4) ;; ⇒ 2
 #+end_src
 
-*Result*:
-#+begin_src emacs-lisp
-2
-#+end_src
 
 *** fp-ignore-args (fn)
 
@@ -264,26 +220,33 @@ Return a function that invoke =fn= without args.
 
 This function accepts any number of arguments, but ignores them.
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun my-fn ()
   "Show message hello world."
   (message "Hello world"))
 
-(funcall (fp-ignore-args my-fn) 4)
-#+end_src
-
-*Result*:
-#+begin_src emacs-lisp
-"Hello world"
+(funcall (fp-ignore-args my-fn) 4) ;;   ⇒ "Hello world"
 #+end_src
 
 *** fp-not (fn)
 
 Return a function that negates the result of a function ~fn~.
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 
-(funcall (fp-not stringp) 4)
-;;   ⇒ t
+(funcall (fp-not stringp) 4) ;;   ⇒ t
+#+end_src
+
+*** fp-cond  (&rest functions)
+Return a function that apply ~functions~ as cond clauses. Functions should be a vector of [predicate transformer] pairs or a list (predicate transformer).
+
+#+begin_src emacs-lisp
+(funcall (fp-cond
+          [stringp upcase]
+          [symbolp symbol-name]
+          [numberp (fp-partial * 2)])
+         2)
+
+;;   ⇒ 4
 #+end_src
 

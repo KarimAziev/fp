@@ -1,24 +1,34 @@
 # fp
 
-- [Requirements](#requirements)
-- [Installation](#installation)
-  - [Manually](#manually)
-  - [With use-package and straight](#with-use-package-and-straight)
-- [Usage](#usage)
-  - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
-  - [fp-compose (\&rest functions)](#fp-compose-rest-functions)
-  - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
-  - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
-  - [fp-and (\&rest functions)](#fp-and-rest-functions)
-  - [fp-or (\&rest functions)](#fp-or-rest-functions)
-  - [fp-converge (combine-fn \&rest
-    functions)](#fp-converge-combine-fn-rest-functions)
-  - [fp-use-with (combine-fn \&rest
-    functions)](#fp-use-with-combine-fn-rest-functions)
-  - [fp-when (pred fn)](#fp-when-pred-fn)
-  - [fp-unless (pred fn)](#fp-unless-pred-fn)
-  - [fp-const (value)](#fp-const-value)
-  - [fp-ignore-args (fn)](#fp-ignore-args-fn)
+`fp` is a collection of combinators to write in point-free style (also
+called Tacit programming).
+
+# Table of Contents
+
+> - [fp](#fp)
+>   - [Requirements](#requirements)
+>   - [Installation](#installation)
+>     - [Manually](#manually)
+>     - [With use-package and
+>       straight](#with-use-package-and-straight)
+>   - [Usage](#usage)
+>     - [fp-pipe (\&rest functions)](#fp-pipe-rest-functions)
+>     - [fp-compose (\&rest
+>       functions)](#fp-compose-rest-functions)
+>     - [fp-partial (fn \&rest args)](#fp-partial-fn-rest-args)
+>     - [fp-rpartial (fn \&rest args)](#fp-rpartial-fn-rest-args)
+>     - [fp-and (\&rest functions)](#fp-and-rest-functions)
+>     - [fp-or (\&rest functions)](#fp-or-rest-functions)
+>     - [fp-converge (combine-fn \&rest
+>       functions)](#fp-converge-combine-fn-rest-functions)
+>     - [fp-use-with (combine-fn \&rest
+>       functions)](#fp-use-with-combine-fn-rest-functions)
+>     - [fp-when (pred fn)](#fp-when-pred-fn)
+>     - [fp-unless (pred fn)](#fp-unless-pred-fn)
+>     - [fp-const (value)](#fp-const-value)
+>     - [fp-ignore-args (fn)](#fp-ignore-args-fn)
+>     - [fp-not (fn)](#fp-not-fn)
+>     - [fp-cond (\&rest functions)](#fp-cond--rest-functions)
 
 ## Requirements
 
@@ -31,20 +41,14 @@
 Download repository and it to your load path in your init file:
 
 ```elisp
-
 (add-to-list 'load-path "/path/to/fp)
-
 (require 'fp)
-
 ```
 
 ### With use-package and straight
 
 ```elisp
-
-(use-package fp
-    :straight (:repo "KarimAziev/fp" :type git :host github))
-
+(use-package fp :straight (:repo "KarimAziev/fp" :type git :host github))
 ```
 
 ## Usage
@@ -57,12 +61,7 @@ Return left-to-right composition from `functions`.
 
 ```elisp
 (funcall (fp-pipe upcase split-string) "some string")
-```
-
-**Result:**
-
-```elisp
-("SOME" "STRING")
+⇒ ("SOME" "STRING")
 ```
 
 ### fp-compose (\&rest functions)
@@ -73,12 +72,7 @@ Return right-to-left composition from `functions`.
 
 ```elisp
 (funcall (fp-compose split-string upcase) "some string")
-```
-
-**Result:**
-
-```elisp
-("SOME" "STRING")
+⇒ ("SOME" "STRING")
 ```
 
 ### fp-partial (fn \&rest args)
@@ -92,13 +86,7 @@ arguments are fixed at the values with which this function was called.
 **Example:**
 
 ```elisp
-(funcall (fp-partial > 3) 2)
-```
-
-**Result:**
-
-```elisp
-t
+(funcall (fp-partial > 3) 2) ;; ⇒ t
 ```
 
 ### fp-rpartial (fn \&rest args)
@@ -112,42 +100,19 @@ arguments are fixed at the values with which this function was called.
 **Example:**
 
 ```elisp
-(funcall (fp-rpartial > 3) 2)
-```
-
-**Result:**
-
-```elisp
-nil
-```
-
-**Example:**
-
-```elisp
 (funcall (fp-rpartial plist-get :name) '(:name "John" :age 30))
-```
-
-**Result:**
-
-```elisp
-"John"
+;; ⇒ "John"
 ```
 
 ### fp-and (\&rest functions)
 
-Return an unary function which call invoke `functions` until one of them
-yields nil.
+Return an unary function which call `functions` until one of them yields
+nil.
 
 **Example:**
 
 ```elisp
-(funcall (fp-and numberp 1+) 30)
-```
-
-**Result:**
-
-```elisp
-31
+(funcall (fp-and numberp 1+) 30) ;; ⇒ 31
 ```
 
 ### fp-or (\&rest functions)
@@ -160,12 +125,8 @@ Return a function that `functions` until one of them yields non-nil.
 (seq-filter
  (fp-or numberp stringp)
  '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30)))
-```
 
-**Result:**
-
-```elisp
-("a" "b" "c" 34)
+;; ⇒ ("a" "b" "c" 34)
 ```
 
 ### fp-converge (combine-fn \&rest functions)
@@ -185,7 +146,7 @@ John, and `concat` applied with results.
 
 ```elisp
 (funcall (fp-converge concat [upcase downcase]) "John")
-⇒ "JOHNjohn"
+;; ⇒ "JOHNjohn"
 ```
 
 If first element of `functions` is a vector, it will be used instead.
@@ -194,15 +155,14 @@ If first element of `functions` is a vector, it will be used instead.
 
 ```elisp
 (funcall (fp-converge concat upcase downcase) "John")
-⇒ "JOHNjohn"
+;; ⇒ "JOHNjohn"
 ```
 
-### (fp-use-with combine-fn \&rest functions)
+### fp-use-with (combine-fn \&rest functions)
 
-Return a function with the arity of length `functions`.
-
-This function will apply `combine-fn` with results of every function
-called with **one** argument at the same index .
+Return a function with the arity of length `functions`. This function
+will apply `combine-fn` with results of every function called with
+**one** argument at the same index .
 
 **Example:**
 
@@ -222,12 +182,12 @@ If first element of `functions` is a vector, it will be used instead.
 
 ### fp-when (pred fn)
 
-Return an unary function that invoke `fn` if result of calling PRED is
+Return an unary function that invoke `fn` if result of calling `pred` is
 non-nil.
 
-If result of PRED is nil, return the argument as is.
+If result of `pred` is nil, return the argument as is.
 
-Both PRED and `fn` called with one argument.
+Both `pred` and `fn` called with one argument.
 
 ```elisp
 (defun truncate-maybe (str len)
@@ -239,22 +199,18 @@ Both PRED and `fn` called with one argument.
 
 (list (truncate-maybe "long string" 4)
       (truncate-maybe "lo" 4))
-```
 
-**Result:**
-
-```elisp
-("long" "lo")
+;; ⇒ ("long" "lo")
 ```
 
 ### fp-unless (pred fn)
 
-Return an unary function that invoke `fn` if result of calling PRED is
+Return an unary function that invoke `fn` if result of calling `pred` is
 non-nil.
 
-If result of PRED is nil, return the argument as is.
+If result of `pred` is nil, return the argument as is.
 
-Both PRED and `fn` called with one argument.
+Both `pred` and `fn` called with one argument.
 
 ```elisp
 (defun divide-maybe (a b)
@@ -265,12 +221,8 @@ Both PRED and `fn` called with one argument.
 
 (list (divide-maybe 10 0)
       (divide-maybe 10 2))
-```
 
-**Result**:
-
-```elisp
-(0 5)
+;; ⇒ '(0 5)
 ```
 
 ### fp-const (value)
@@ -280,13 +232,7 @@ Return a function that always return `value.`
 This function accepts any number of arguments, but ignores them.
 
 ```elisp
-(funcall (fp-const 2) 4)
-```
-
-**Result**:
-
-```elisp
-2
+(funcall (fp-const 2) 4) ;; ⇒ 2
 ```
 
 ### fp-ignore-args (fn)
@@ -300,11 +246,30 @@ This function accepts any number of arguments, but ignores them.
   "Show message hello world."
   (message "Hello world"))
 
-(funcall (fp-ignore-args my-fn) 4)
+(funcall (fp-ignore-args my-fn) 4) ;;   ⇒ "Hello world"
 ```
 
-**Result**:
+### fp-not (fn)
+
+Return a function that negates the result of a function `fn`.
 
 ```elisp
-"Hello world"
+
+(funcall (fp-not stringp) 4) ;;   ⇒ t
+```
+
+### fp-cond (\&rest functions)
+
+Return a function that apply `functions` as cond clauses. Functions
+should be a vector of \[predicate transformer\] pairs or a list
+(predicate transformer).
+
+```commonlisp
+(funcall (fp-cond
+          [stringp upcase]
+          [symbolp symbol-name]
+          [numberp (fp-partial * 2)])
+         2)
+
+;;   ⇒ 4
 ```

@@ -4,7 +4,7 @@
 
 ;; Author: Karim Aziiev <karim.aziiev@gmail.com>
 ;; URL: https://github.com/KarimAziev/fp
-;; Keywords: lisp
+;; Keywords: lisp, extensions
 ;; Version: 2.0.0
 ;; Package-Requires: ((emacs "26.1"))
 
@@ -22,8 +22,6 @@
 ;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;; URL: https://github.com:KarimAziev/fp.git
 
 ;;; Commentary:
 
@@ -194,8 +192,22 @@ This function accepts any number of arguments, but ignores them."
      (funcall ,@(fp--expand fn))))
 
 (defmacro fp-not (fn)
-  "Return a function which firstly invoke FN and then not."
+  "Return a function that negates the result of function FN."
   `(fp-compose not ,fn))
+
+(defmacro fp-cond (&rest functions)
+  "Return a function that apply FUNCTIONS as cond clauses.
+Functions should be a vector of [predicate transformer] pairs or a
+list (predicate transformer)."
+  (declare (pure t)
+           (side-effect-free error-free))
+  `(lambda (&rest args)
+     (cond ,@(mapcar (lambda (v)
+                       (when (vectorp v)
+                         (setq v (append v nil)))
+                       (list `(apply ,@(fp--expand (pop v)) args)
+                             `(apply ,@(fp--expand (pop v)) args)))
+                     functions))))
 
 (when (version<= "28.1" emacs-version)
   (eval-and-compile
@@ -210,13 +222,15 @@ This function accepts any number of arguments, but ignores them."
         (fp-partial
          :eval (funcall (fp-rpartial > 3) 2))
         (fp-rpartial
-         :eval (funcall (fp-rpartial plist-get :name) '(:name "John" :age 30)))
+         :eval (funcall (fp-rpartial plist-get :name) '(:name "John"
+                                                              :age 30)))
         (fp-and
          :eval (funcall (fp-and numberp 1+) 30))
         (fp-or
          :eval (seq-filter
                 (fp-or numberp stringp)
-                '("a" "b" (0 1 2 3 4) "c" 34 (:name "John" :age 30))))
+                '("a" "b" (0 1 2 3 4) "c" 34 (:name "John"
+                                                    :age 30))))
         (fp-converge
          :eval (funcall (fp-converge concat [upcase downcase]) "John")
          :eval (funcall (fp-converge concat upcase downcase) "John"))
@@ -234,12 +248,22 @@ This function accepts any number of arguments, but ignores them."
          :eval (funcall (fp-const 2) 4))
         (fp-ignore-args
           :eval (funcall (fp-ignore-args
-                           (lambda (&optional a) (numberp a)))
+                           (lambda (&optional a)
+                             (numberp a)))
                          4))
         (fp-use-with
          :eval (funcall (fp-use-with concat [upcase downcase]) "hello " "world")
          :eval (funcall (fp-use-with + [(fp-partial 1+) identity]) 2 2)
-         :eval (funcall (fp-use-with + (fp-partial 1+) identity) 2 2))))))
+         :eval (funcall (fp-use-with + (fp-partial 1+) identity) 2 2))
+        (fp-cond
+         :eval
+         (funcall (fp-cond
+                   [stringp upcase]
+                   [symbolp symbol-name]
+                   [numberp (fp-partial * 2)])))
+        (fp-not
+         :eval
+         (funcall (fp-not stringp) 4))))))
 
 (provide 'fp)
 ;;; fp.el ends here

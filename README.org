@@ -1,6 +1,8 @@
+#+OPTIONS: H:9 tags:nil
 
 * fp
-A collection of combinators to write in point-free style (also called Tacit programming).
+
+A library of point-free style combinators for Emacs Lisp.
 
 * Table of Contents                                          :TOC_4:QUOTE:
 #+BEGIN_QUOTE
@@ -10,20 +12,24 @@ A collection of combinators to write in point-free style (also called Tacit prog
     - [[#manually][Manually]]
     - [[#with-use-package-and-straight][With use-package and straight]]
   - [[#usage][Usage]]
-    - [[#fp-pipe-rest-functions][fp-pipe (&rest functions)]]
-    - [[#fp-compose-rest-functions][fp-compose (&rest functions)]]
-    - [[#fp-partial-fn-rest-args][fp-partial (fn &rest args)]]
-    - [[#fp-rpartial-fn-rest-args][fp-rpartial (fn &rest args)]]
-    - [[#fp-and-rest-functions][fp-and (&rest functions)]]
-    - [[#fp-or-rest-functions][fp-or (&rest functions)]]
-    - [[#fp-converge-combine-fn-rest-functions][fp-converge (combine-fn &rest functions)]]
-    - [[#fp-use-with-combine-fn-rest-functions][fp-use-with (combine-fn &rest functions)]]
-    - [[#fp-when-pred-fn][fp-when (pred fn)]]
-    - [[#fp-unless-pred-fn][fp-unless (pred fn)]]
-    - [[#fp-const-value][fp-const (value)]]
-    - [[#fp-ignore-args-fn][fp-ignore-args (fn)]]
-    - [[#fp-not-fn][fp-not (fn)]]
-    - [[#fp-cond--rest-functions][fp-cond  (&rest functions)]]
+    - [[#macros][Macros]]
+      - [[#fp-pipe-rest-functions][~fp-pipe~ (&rest functions)]]
+      - [[#fp-compose-rest-functions][~fp-compose~ (&rest functions)]]
+      - [[#fp-partial-fn-rest-args][~fp-partial~ (fn &rest args)]]
+      - [[#fp-rpartial-fn-rest-args][~fp-rpartial~ (fn &rest args)]]
+      - [[#fp-and-rest-functions][~fp-and~ (&rest functions)]]
+      - [[#fp-or-rest-functions][~fp-or~ (&rest functions)]]
+      - [[#fp-converge-combine-fn-rest-functions][~fp-converge~ (combine-fn &rest functions)]]
+      - [[#fp-use-with-combine-fn-rest-functions][~fp-use-with~ (combine-fn &rest functions)]]
+      - [[#fp-when-pred-fn][~fp-when~ (pred fn)]]
+      - [[#fp-unless-pred-fn][~fp-unless~ (pred fn)]]
+      - [[#fp-const-value][~fp-const~ (value)]]
+      - [[#fp-ignore-args-fn][~fp-ignore-args~ (fn)]]
+      - [[#fp-not-fn][~fp-not~ (fn)]]
+      - [[#fp-cond--rest-pairs][~fp-cond~  (&rest pairs)]]
+    - [[#functions][Functions]]
+      - [[#fp-nil--rest-ignored][~fp-nil~  (&rest ignored)]]
+      - [[#fp-t--rest-ignored][~fp-t~  (&rest ignored)]]
 #+END_QUOTE
 
 ** Requirements
@@ -36,7 +42,7 @@ A collection of combinators to write in point-free style (also called Tacit prog
 
 Download repository and it to your load path in your init file:
 #+begin_src elisp :eval no
-(add-to-list 'load-path "/path/to/fp)
+(add-to-list 'load-path "/path/to/fp")
 (require 'fp)
 #+end_src
 
@@ -47,68 +53,65 @@ Download repository and it to your load path in your init file:
 #+end_src
 
 ** Usage
-*** fp-pipe (&rest functions)
 
-Return left-to-right composition from ~functions~.
+*** Macros
 
-*Example:*
+**** ~fp-pipe~ (&rest functions)
+
+Return a left-to-right composition from ~functions~. The first argument may have any arity; the remaining arguments must be 
+unary.
+
 #+begin_src elisp :results raw :results code
 (funcall (fp-pipe upcase split-string) "some string")
-⇒ ("SOME" "STRING")
+;; ⇒ ("SOME" "STRING")
 #+end_src
 
 
-*** fp-compose (&rest functions)
+**** ~fp-compose~ (&rest functions)
 
-Return right-to-left composition from ~functions~.
+Return a right-to-left composition from ~functions~. The last function may have any arity; the remaining arguments must be unary.
 
-*Example:*
 #+begin_src elisp
 (funcall (fp-compose split-string upcase) "some string")
-⇒ ("SOME" "STRING")
+;; ⇒ ("SOME" "STRING")
 #+end_src
 
-*** fp-partial (fn &rest args)
-Return a partial application of =fn= to left-hand ~args~.
+**** ~fp-partial~ (fn &rest args)
+Return a partial application of a function ~fn~ to left-hand ~args~. 
 
-~args~ is a list of the last N arguments to pass to =fn=. The result is a new
-function which does the same as =fn=, except that the last N arguments are fixed
-at the values with which this function was called.
+Arguments ~args~ is a list of the last ~n~ arguments to pass to ~fn~. The result is a new function that does the same as ~fn~, except that the last ~n~ arguments are fixed at the values with which this function was called.
 
-*Example:*
 #+begin_src elisp
 (funcall (fp-partial > 3) 2) ;; ⇒ t
 #+end_src
 
 
-*** fp-rpartial (fn &rest args)
+**** ~fp-rpartial~ (fn &rest args)
 
-Return a partial application of =fn= to right-hand ~args~.
+Return a partial application of a function ~fn~ to right-hand arguments ~args~. 
 
-~args~ is a list of the last N arguments to pass to =fn=. The result is a new
-function which does the same as =fn=, except that the last N arguments are fixed
-at the values with which this function was called.
+Arguments ~args~ is a list of the last ~n~ arguments to pass to ~fn~. 
 
-*Example:*
+The result is a new function which does the same as ~fn~, except that the last ~n~ arguments are fixed at the values with which this function was called.
+
 #+begin_src elisp
 (funcall (fp-rpartial plist-get :name) '(:name "John" :age 30))
 ;; ⇒ "John"
 #+end_src
 
 
-*** fp-and (&rest functions)
-Return an unary function which call ~functions~ until one of them yields nil.
+**** ~fp-and~ (&rest functions)
+Return a unary function that calls ~functions~ until one of them yields nil. If all functions return non-nil, return the last such value.
 
-*Example:*
 #+begin_src elisp
-(funcall (fp-and numberp 1+) 30) ;; ⇒ 31
+(let ((x 30))
+  (funcall (fp-and numberp 1+) x))
+;; ⇒ 31
 #+end_src
 
+**** ~fp-or~ (&rest functions)
+Expand to a unary function that calls ~functions~ until first non-nil result. Return that first non-nil result without calling the remaining functions. If all functions returned nil, the result will be also nil.
 
-*** fp-or (&rest functions)
-Return a function that ~functions~ until one of them yields non-nil.
-
-*Example:*
 #+begin_src elisp
 (seq-filter
  (fp-or numberp stringp)
@@ -118,15 +121,10 @@ Return a function that ~functions~ until one of them yields non-nil.
 #+end_src
 
 
-*** fp-converge (combine-fn &rest functions)
+**** ~fp-converge~ (combine-fn &rest functions)
 
-Return a new function that accepts a converging function COMBINE-FN and a list of branching ~functions~.
+Return a function to apply ~combine-fn~ with the results of branching ~functions~. If the first element of ~functions~ is a vector, it will be used instead. 
 
-When invoked, this new function is applied to some arguments, and each branching function is applied to those same arguments. The results of each branching function are passed as arguments to the converging function to produce the return value.
-
-For example here both ~upcase~ and ~downcase~ applied with argument John, and ~concat~ applied with results.
-
-*Example:*
 #+begin_src elisp
 (funcall (fp-converge concat [upcase downcase]) "John")
 ;; ⇒ "JOHNjohn"
@@ -134,21 +132,17 @@ For example here both ~upcase~ and ~downcase~ applied with argument John, and ~c
 
 If first element of ~functions~ is a vector, it will be used instead.
 
-*Example:*
 #+begin_src elisp
 (funcall (fp-converge concat upcase downcase) "John")
 ;; ⇒ "JOHNjohn"
 #+end_src
 
 
-*** fp-use-with (combine-fn &rest functions)
+**** ~fp-use-with~ (combine-fn &rest functions)
 
-  Return a function with the arity of length ~functions~.
-  This function will apply ~combine-fn~ with results of every function called with *one* argument at the same index .
+Return a function with the arity of length ~functions~. Call every branching function with an argument at the same index, and finally, ~combine-fn~ will be applied to the supplied values.
 
-  *Example:*
-  #+begin_src elisp
-
+#+begin_src elisp
 (funcall (fp-use-with concat [upcase downcase]) "hello " "world")
   ;;  ⇒ "HELLO world"
 #+end_src
@@ -156,18 +150,13 @@ If first element of ~functions~ is a vector, it will be used instead.
   If first element of ~functions~ is a vector, it will be used instead.
 
  #+begin_src elisp
-
 (funcall (fp-use-with concat upcase downcase) "hello " "world")
 ;;   ⇒ "HELLO world"
 #+end_src
 
 
-*** fp-when (pred fn)
-Return an unary function that invoke =fn= if result of calling ~pred~ is non-nil.
-
-If result of ~pred~ is nil, return the argument as is.
-
-Both ~pred~ and =fn= called with one argument.
+**** ~fp-when~ (pred fn)
+Return a function that calls ~fn~ if the result of calling ~pred~ is non-nil. Both ~pred~ and ~fn~ are called with one argument. If the result of ~pred~ is nil, return the argument as is.
 
 #+begin_src elisp
 (defun truncate-maybe (str len)
@@ -183,12 +172,12 @@ Both ~pred~ and =fn= called with one argument.
 ;; ⇒ ("long" "lo")
 #+end_src
 
-*** fp-unless (pred fn)
-Return an unary function that invoke =fn= if result of calling ~pred~ is non-nil.
+**** ~fp-unless~ (pred fn)
+Return a function that calls ~fn~ if the result of calling ~pred~ is non-nil. 
 
-If result of ~pred~ is nil, return the argument as is.
+Both ~pred~ and ~fn~ are called with one argument. 
 
-Both ~pred~ and =fn= called with one argument.
+If the result of ~pred~ is nil, return the argument as is.Return a unary function that invokes ~fn~ if the result of calling ~pred~ is nil. Accept one argument and pass it both to ~pred~ and ~fn~. If the result of ~pred~ is non-nil, return the argument as is.
 
 #+begin_src elisp
 (defun divide-maybe (a b)
@@ -203,22 +192,18 @@ Both ~pred~ and =fn= called with one argument.
 ;; ⇒ '(0 5)
 #+end_src
 
-*** fp-const (value)
+**** ~fp-const~ (value)
 
-Return a function that always return ~value.~
-
-This function accepts any number of arguments, but ignores them.
+Return a function that always returns ~value~. This function accepts any number of arguments but ignores them.
 
 #+begin_src elisp
 (funcall (fp-const 2) 4) ;; ⇒ 2
 #+end_src
 
 
-*** fp-ignore-args (fn)
+**** ~fp-ignore-args~ (fn)
 
-Return a function that invoke =fn= without args.
-
-This function accepts any number of arguments, but ignores them.
+Return a function that invokes ~fn~ without args. This function accepts any number of arguments but ignores them.
 
 #+begin_src elisp
 (defun my-fn ()
@@ -228,25 +213,65 @@ This function accepts any number of arguments, but ignores them.
 (funcall (fp-ignore-args my-fn) 4) ;;   ⇒ "Hello world"
 #+end_src
 
-*** fp-not (fn)
+**** ~fp-not~ (fn)
 
-Return a function that negates the result of a function ~fn~.
+Return a function that negates the result of function ~fn~.
 
 #+begin_src elisp
-
 (funcall (fp-not stringp) 4) ;;   ⇒ t
 #+end_src
 
-*** fp-cond  (&rest functions)
-Return a function that apply ~functions~ as cond clauses. Functions should be a vector of [predicate transformer] pairs or a list (predicate transformer).
+**** ~fp-cond~  (&rest pairs)
+Return a function that expands a list of =pairs= to cond clauses. Every pair should be either: 
+
+- a vector of [predicate transformer] 
 
 #+begin_src elisp
 (funcall (fp-cond
-          [stringp upcase]
-          [symbolp symbol-name]
-          [numberp (fp-partial * 2)])
+           [stringp identity]
+           [symbolp symbol-name]
+           [integerp number-to-string]
+           [floatp number-to-string]
+           [t (fp-partial format "%s")])
          2)
 
 ;;   ⇒ 4
 #+end_src
 
+- a list of (predicate transformer).
+
+#+begin_src elisp
+(funcall (fp-cond
+           (stringp identity)
+           (symbolp symbol-name)
+           (integerp number-to-string)
+           (floatp number-to-string)
+           (t (fp-partial format "%s")))
+         2)
+;;   ⇒ 4
+#+end_src
+The predicate can also be =t=. 
+
+All of the arguments to function are applied to each of the predicates in turn until one returns a "truthy" value, at which point fn returns the result of applying its arguments to the corresponding transformer.
+*** Functions
+
+**** ~fp-nil~  (&rest ignored)
+Do nothing and return =t=. This function accepts any number of arguments but ignores them.
+#+begin_example
+(fp-nil t)
+    ⇒ nil
+(fp-nil 23)
+    ⇒ nil
+(fp-nil)
+   ⇒ nil
+#+end_example
+**** ~fp-t~  (&rest ignored)
+Do nothing and return =t=. This function accepts any number of arguments, but ignores them.
+ #+begin_example
+ (fp-t nil)
+    ⇒ t
+  (fp-t)
+    ⇒ t
+  (fp-t 23)
+    ⇒ t
+#+end_example

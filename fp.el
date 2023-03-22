@@ -238,7 +238,7 @@ This function accepts any number of arguments but ignores them."
   nil)
 
 (when (version<= "28.1" emacs-version)
-  (eval-and-compile
+  (eval-when-compile
     (require 'shortdoc nil t)
     (when (fboundp 'define-short-documentation-group)
       (define-short-documentation-group fp

@@ -91,17 +91,18 @@ If all functions return non-nil, return the last such value."
                   functions)))))
 
 (defmacro fp-partial (fn &rest args)
-  "Return a partial application of a function FN to left-hand ARGS.
+  "Return a partial application of FN to leftmost ARGS.
 
-ARGS is a list of the last N arguments to pass to FN. The result is a new
-function that does the same as FN, except that the last N arguments are fixed
-at the values with which this function was called."
+ARGS are the first N arguments to pass to FN.
+
+The result is a new function that behaves like FN, except that the first N
+arguments are fixed to the values supplied here."
   (declare (side-effect-free t))
   (let ((pre-args (make-symbol "pre-args")))
     `(lambda (&rest ,pre-args)
        ,(car (list
               `(apply ,@(fp--expand fn)
-                      (append (list ,@args) ,pre-args)))))))
+                (append (list ,@args) ,pre-args)))))))
 
 (defmacro fp-rpartial (fn &rest args)
   "Return a partial application of a function FN to right-hand ARGS.
@@ -145,6 +146,7 @@ and finally, COMBINE-FN will be applied to the supplied values.
 Example:
 
 \(funcall (fp-use-with concat [upcase downcase]) \"hello \" \"world\")
+=> Result: \"HELLO world\".
 
 
 If first element of FUNCTIONS is vector, it will be used instead:
@@ -153,9 +155,7 @@ If first element of FUNCTIONS is vector, it will be used instead:
 => Result: 5
 
 \(funcall (fp-use-with + (fp-partial 1+) identity) 2 2)
-=> Result: 5
-
-=> Result: \"HELLO world\"."
+=> Result: 5."
   (let ((args (make-symbol "args")))
     `(lambda (&rest ,args)
        (apply
@@ -163,10 +163,10 @@ If first element of FUNCTIONS is vector, it will be used instead:
         (list
          ,@(seq-map-indexed (lambda (v idx)
                               `(funcall ,@(fp--expand v)
-                                        (nth ,idx ,args)))
-                            (if (vectorp (car functions))
-                                (append (car functions) nil)
-                              functions)))))))
+                                (nth ,idx ,args)))
+            (if (vectorp (car functions))
+                (append (car functions) nil)
+              functions)))))))
 
 (defmacro fp-when (pred fn)
   "Return a function that calls FN if the result of calling PRED is non-nil.
@@ -258,7 +258,7 @@ This function accepts any number of arguments but ignores them."
      (condition-case nil
          (progn
            (apply ,@(fp--expand fn)
-                  (append (list ,@args) right-args)))
+            (append (list ,@args) right-args)))
        (error nil))))
 
 
@@ -300,12 +300,12 @@ Remaining arguments ARGS are initial arguments for FN."
         (apply fn (append args args2))
       (error nil))))
 
-(when (version<= "28.1" emacs-version)
-  (eval-when-compile
+(eval-when-compile
+  (when (version<= "28.1" emacs-version)
     (require 'shortdoc nil t)
     (when (fboundp 'define-short-documentation-group)
       (define-short-documentation-group fp
-        "Combinators"
+        "Macros"
         (fp-pipe
          :eval (fp-pipe split-string upcase)
          :eval (funcall (fp-pipe upcase split-string) "some string"))
@@ -325,7 +325,7 @@ Remaining arguments ARGS are initial arguments for FN."
          :eval (seq-filter
                 (fp-or numberp stringp)
                 '("a" "b" (0 1 2 3 4) "c" 34 (:name "John"
-                                                    :age 30))))
+                                              :age 30))))
         (fp-converge
          :eval "(funcall
                 (fp-converge concat [upcase downcase])
@@ -375,6 +375,7 @@ Remaining arguments ARGS are initial arguments for FN."
         (fp-not
          :eval
          (funcall (fp-not stringp) 4))
+        "Functions"
         (fp-nil
          :eval (fp-nil t)
          :eval (fp-nil 23)

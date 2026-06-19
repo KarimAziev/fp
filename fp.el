@@ -1,6 +1,6 @@
 ;;; fp.el --- Collection of combinators for Emacs Lisp -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022 Karim Aziiev <karim.aziiev@gmail.com>
+;; Copyright (C) 2022-2026 Karim Aziiev <karim.aziiev@gmail.com>
 
 ;; Author: Karim Aziiev <karim.aziiev@gmail.com>
 ;; URL: https://github.com/KarimAziev/fp

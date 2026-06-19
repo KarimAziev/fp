@@ -277,35 +277,27 @@ error, return nil instead."
        (error nil))))
 
 (defun fp-rpartial-ignore-errors (fn &rest args)
-  "Return a function that is a partial application of FN to ARGS.
-ARGS is a list of the first N arguments to pass to FN.
+  "Return a function that appends ARGS to its args and ignores errors.
 
-The result is a new function which does the same as FN,
-except that:
-- the first N arguments are fixed at the values with which this function
-was called
-- if an error occurs, return nil."
-  (lambda (&rest args2)
+Argument FN is the function called while ignoring any error.
+
+Remaining arguments ARGS are values appended to the later call
+arguments, the default is nil."
+  (lambda (&rest pre-args)
     (condition-case nil
-        (progn
-          (apply fn
-                 (append args args2)))
+        (apply fn (append pre-args args))
       (error nil))))
 
 (defun fp-partial-ignore-errors (fn &rest args)
-  "Return a function that is a partial application of FN to ARGS.
-ARGS is a list of the first N arguments to pass to FN.
+  "Return a partial application of function FN that ignores errors.
 
-The result is a new function which does the same as FN,
-except that:
-- the first N arguments are fixed at the values with which this function
-was called
-- if an error occurs, return nil."
+Argument FN is a function called by the returned wrapper with all
+collected arguments.
+
+Remaining arguments ARGS are initial arguments for FN."
   (lambda (&rest args2)
     (condition-case nil
-        (progn
-          (apply fn
-                 (append args args2)))
+        (apply fn (append args args2))
       (error nil))))
 
 (when (version<= "28.1" emacs-version)

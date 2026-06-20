@@ -4,9 +4,9 @@
 
 A tiny library of point-free style combinators for Emacs Lisp.
 
-Why? Writing in a point-free style usually only needs a few basic helpers. Many
-similar libraries are much larger than that, while =fp= tries to keep the common
-pieces compact.
+Why? Writing in a point-free style in Elisp usually only needs a few basic
+helpers. Many similar libraries are much larger than that, while =fp= tries to
+keep the common pieces compact.
 
 Most entry points are macros because it is annoying to sharp-quote functions
 every time, for example writing =(apply-partially #'my-fn arg)=. With =fp= you

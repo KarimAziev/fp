@@ -25,7 +25,96 @@
 
 ;;; Commentary:
 
-;; Collection of combinators for Emacs Lisp
+;; This is a tiny library of point-free-style combinators for Emacs Lisp. Most entry points
+;; are macros that expand to lambda forms.
+
+;; After installation, you can see usage examples by running "M-x shortdoc" and typing `fp'.
+
+;;; Composition (macros)
+;;
+;; `fp-pipe'
+;;   Build a left-to-right function pipeline.  The first function may accept
+;;   any number of arguments; each remaining function receives the previous
+;;   result.
+;;
+;; `fp-compose'
+;;   Build a right-to-left composition.  This is the same idea as
+;;   `fp-pipe', but in reverse order.
+;;
+;; `fp-converge'
+;;   Apply several functions to the same arguments, then pass all resulting
+;;   values to a combining function.
+;;
+;; `fp-use-with'
+;;   Apply each supplied function to the argument at the same position, then
+;;   combine the collected results with a final function.
+
+;;; Partial application (macros)
+;;
+;; `fp-partial'
+;;   Fix the leftmost arguments of a function and return a new function.
+;;
+;; `fp-rpartial'
+;;   Fix the rightmost arguments of a function and return a new function.
+;;
+;; `fp-ignore-errors-partial'
+;;   Like `fp-partial', but return nil if the resulting call signals an error.
+;;
+;; `fp-ignore-errors-rpartial'
+;;   Like `fp-rpartial', but return nil if the resulting call signals an error.
+
+;;; Partial application (functions)
+;;
+;; `fp-partial-ignore-errors'
+;;   Function variant of left partial application with error suppression.
+;;
+;; `fp-rpartial-ignore-errors'
+;;   Function variant of right partial application with error suppression.
+
+;;; Predicates and boolean combinators (macros)
+;;
+;; `fp-and'
+;;   Return a unary function that applies functions while all results remain
+;;   non-nil, returning the last truthy value.
+;;
+;; `fp-or'
+;;   Return a unary function that applies functions until one returns non-nil.
+;;
+;; `fp-not'
+;;   Negate the result of a predicate or predicate-like function.
+;;
+;; `fp-when'
+;;   Apply a transformer only when a predicate succeeds; otherwise return the
+;;   original argument unchanged.
+;;
+;; `fp-unless'
+;;   Apply a transformer only when a predicate fails; otherwise return the
+;;   original argument unchanged.
+
+;;; Branching combinators (macros)
+;;
+;; `fp-cond'
+;;   Build a function from predicate/transformer pairs, similar to `cond'.
+;;   The first matching predicate determines which transformer is used.
+
+;;; Constant and argument-discarding combinators
+;;
+;; `fp-const'
+;;   Return a function that always yields the same value, ignoring all
+;;   arguments.
+;;
+;; `fp-ignore-args'
+;;   Return a function that ignores all arguments and calls another function
+;;   with none.
+
+;;; Boolean combinators (functions)
+;;
+;; `fp-t'
+;;   Ignore all arguments and always return t.
+;;
+;; `fp-nil'
+;;   Ignore all arguments and always return nil.
+
 
 ;;; Code:
 
@@ -314,12 +403,25 @@ Remaining arguments ARGS are initial arguments for FN."
          :eval (funcall (fp-converge concat [upcase downcase]) "John"))
         (fp-use-with
          :eval
-         (funcall (fp-use-with concat [upcase downcase]) "hello " "world"))
+         (funcall (fp-use-with concat [upcase downcase]) "hello " "world")
+         :eval (funcall
+                (fp-use-with + [(fp-partial 1+) identity])
+                2 2))
         "Partial application (macros)"
         (fp-partial
-         :eval (funcall (fp-partial + 1) 2))
+         :eval (funcall (fp-partial + 1) 2)
+         :eval (funcall (fp-partial format "Hello %s") "world"))
         (fp-rpartial
-         :eval (funcall (fp-rpartial > 3) 2))
+         :eval (mapcar
+                (fp-rpartial plist-get :name)
+                '((:name "Alice"
+                   :age 25)
+                  (:name "Jack"
+                   :age 32)))
+         :eval (funcall (fp-rpartial > 3) 2)
+         :eval (funcall
+                (fp-rpartial plist-get :name) '(:name "John"
+                                                :age 30)))
         (fp-ignore-errors-partial
           :eval (funcall (fp-ignore-errors-partial / 10) 0))
         (fp-ignore-errors-rpartial
@@ -346,6 +448,7 @@ Remaining arguments ARGS are initial arguments for FN."
            \"long string\")")
         (fp-unless
          :eval (funcall (fp-unless zerop (fp-partial / 2)) 0))
+        "Branching combinators (macros)"
         (fp-cond
           :eval "(funcall
            (fp-cond
@@ -354,14 +457,22 @@ Remaining arguments ARGS are initial arguments for FN."
             [integerp number-to-string]
             [floatp number-to-string]
             [t (fp-partial format \"%s\")])
-           2)")
-        "Constant and argument-discarding functions"
+           2)"
+          :eval "(funcall
+                  (fp-cond
+                    (stringp identity)
+                    (symbolp symbol-name)
+                    (integerp number-to-string)
+                    (floatp number-to-string)
+                    (t (fp-partial format \"%s\")))
+                  2)")
+        "Constant and argument-discarding macros"
         (fp-const
          :eval (funcall (fp-const 2) 4))
         (fp-ignore-args
           :eval "(funcall (fp-ignore-args (lambda () (message \"No arguments\")))
            4)")
-        "Boolean combinators (functions)"
+        "Boolean combinators-functions"
         (fp-t
          :eval (fp-t nil)
          :eval (fp-t)

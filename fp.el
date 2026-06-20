@@ -305,85 +305,71 @@ Remaining arguments ARGS are initial arguments for FN."
     (require 'shortdoc nil t)
     (when (fboundp 'define-short-documentation-group)
       (define-short-documentation-group fp
-        "Macros"
+        "Composition (macros)"
         (fp-pipe
-         :eval (fp-pipe split-string upcase)
          :eval (funcall (fp-pipe upcase split-string) "some string"))
         (fp-compose
-         :eval (fp-compose split-string upcase)
          :eval (funcall (fp-compose split-string upcase) "some string"))
+        (fp-converge
+         :eval (funcall (fp-converge concat [upcase downcase]) "John"))
+        (fp-use-with
+         :eval
+         (funcall (fp-use-with concat [upcase downcase]) "hello " "world"))
+        "Partial application (macros)"
         (fp-partial
-         :eval (funcall (fp-rpartial > 3) 2))
+         :eval (funcall (fp-partial + 1) 2))
         (fp-rpartial
-         :eval (funcall
-                (fp-rpartial plist-get :name) '("John" :age 30)))
+         :eval (funcall (fp-rpartial > 3) 2))
+        (fp-ignore-errors-partial
+          :eval (funcall (fp-ignore-errors-partial / 10) 0))
+        (fp-ignore-errors-rpartial
+          :eval (funcall (fp-ignore-errors-rpartial / 0) 10))
+        "Partial application (functions)"
+        (fp-partial-ignore-errors
+         :eval (funcall (fp-partial-ignore-errors #'/ 10) 0))
+        (fp-rpartial-ignore-errors
+         :eval (funcall (fp-rpartial-ignore-errors #'/ 0) 10))
+        "Predicates and boolean combinators (macros)"
         (fp-and
          :eval (funcall (fp-and numberp 1+) 30))
         (fp-or
-         :eval (fp-or floatp integerp)
          :eval (funcall (fp-or floatp integerp) 3)
          :eval (seq-filter
                 (fp-or numberp stringp)
-                '("a" "b" (0 1 2 3 4) "c" 34 (:name "John"
-                                              :age 30))))
-        (fp-converge
-         :eval "(funcall
-                (fp-converge concat [upcase downcase])
-                \"John\")"
-         :eval "(funcall
-                (fp-converge concat upcase downcase)
-                \"John\")")
+                '("a" "b" (0 1 2 3 4) "c" 34)))
+        (fp-not
+         :eval (funcall (fp-not stringp) 4))
         (fp-when
-          :eval
-          "(funcall (fp-when
-                    (fp-compose (fp-partial < 4) length)
-                    (fp-rpartial substring 0 4))
-                  \"long string\")")
+          :eval "(funcall (fp-when
+            (fp-compose (fp-partial < 4) length)
+            (fp-rpartial substring 0 4))
+           \"long string\")")
         (fp-unless
          :eval (funcall (fp-unless zerop (fp-partial / 2)) 0))
+        (fp-cond
+          :eval "(funcall
+           (fp-cond
+            [stringp identity]
+            [symbolp symbol-name]
+            [integerp number-to-string]
+            [floatp number-to-string]
+            [t (fp-partial format \"%s\")])
+           2)")
+        "Constant and argument-discarding functions"
         (fp-const
          :eval (funcall (fp-const 2) 4))
         (fp-ignore-args
-          :eval "(funcall (fp-ignore-args
-                           (lambda () (message \"No arguments\")))
-                         4)")
-        (fp-use-with
-         :eval "(funcall
-                (fp-use-with concat [upcase downcase])
-                \"hello \" \"world\")"
-         :eval
-         "(funcall
-           (fp-use-with + [(fp-partial 1+) identity])
-          2 2)")
-        (fp-cond
-          :eval
-          "(funcall (fp-cond
-                     [stringp identity]
-                     [symbolp symbol-name]
-                     [integerp number-to-string]
-                     [floatp number-to-string]
-                     [t (fp-partial format \"%s\")])
-                   2)"
-          :eval "(funcall
-                  (fp-cond
-                    (stringp identity)
-                    (symbolp symbol-name)
-                    (integerp number-to-string)
-                    (floatp number-to-string)
-                    (t (fp-partial format \"%s\")))
-                  2)")
-        (fp-not
-         :eval
-         (funcall (fp-not stringp) 4))
-        "Functions"
-        (fp-nil
-         :eval (fp-nil t)
-         :eval (fp-nil 23)
-         :eval (fp-nil))
+          :eval "(funcall (fp-ignore-args (lambda () (message \"No arguments\")))
+           4)")
+        "Boolean combinators (functions)"
         (fp-t
          :eval (fp-t nil)
          :eval (fp-t)
-         :eval (fp-t 23))))))
+         :eval (fp-t 23))
+        (fp-nil
+         :eval (fp-nil t)
+         :eval (fp-nil 23)
+         :eval (fp-nil))))))
 
 (provide 'fp)
 ;;; fp.el ends here

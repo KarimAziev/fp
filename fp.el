@@ -6,7 +6,7 @@
 ;; URL: https://github.com/KarimAziev/fp
 ;; Keywords: lisp, extensions
 ;; Version: 2.2.0
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "29.4"))
 
 ;; This file is NOT part of GNU Emacs.
 

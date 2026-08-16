@@ -52,7 +52,7 @@ can usually write the function name directly, such as =(fp-partial my-fn arg)=.
 
 ** Requirements
 
-+ Emacs >= 27.1
++ Emacs >= 29.4
 
 ** Installation
 

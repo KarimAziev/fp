@@ -11,7 +11,8 @@ test:
 
 checkdoc:
 	$(EMACS_BATCH) --eval \
-	  '(progn (require (quote checkdoc)) (find-file "fp.el") (checkdoc-batch))'
+	  '(progn (require (quote checkdoc)) (find-file "fp.el") \
+	     (let ((checkdoc-autofix-flag nil)) (checkdoc-current-buffer)))'
 
 compile:
 	$(EMACS_BATCH) --eval '(setq byte-compile-error-on-warn t)' \

@@ -216,7 +216,7 @@ Argument COMBINE-FN is a required function designator or fp form
 used to combine the results returned by FUNCTIONS.
 
 Remaining arguments FUNCTIONS are function designators or fp forms
-applied to the generated lambda arguments. If the first value is
+applied to the generated lambda arguments.  If the first value is
 a vector, its elements are used instead.
 
 Example:

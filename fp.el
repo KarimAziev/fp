@@ -122,13 +122,14 @@
 (require 'seq)
 
 
-(defun fp--expand (init-fn)
-  "If INIT-FN is a non-quoted symbol, add a sharp quote.
+(eval-and-compile
+  (defun fp--expand (init-fn)
+    "If INIT-FN is a non-quoted symbol, add a sharp quote.
 Otherwise, return it as is."
-  (setq init-fn (macroexpand init-fn))
-  (if (symbolp init-fn)
-      `(#',init-fn)
-    `(,init-fn)))
+    (setq init-fn (macroexpand init-fn))
+    (if (symbolp init-fn)
+        `(#',init-fn)
+      `(,init-fn))))
 
 (defmacro fp-pipe (&rest functions)
   "Return a left-to-right composition from FUNCTIONS.
@@ -206,7 +207,7 @@ at the values with which this function was called."
     `(lambda (&rest ,pre-args)
        ,(car (list
               `(apply ,@(fp--expand fn)
-                      (append ,pre-args (list ,@args))))))))
+                (append ,pre-args (list ,@args))))))))
 
 (defmacro fp-converge (combine-fn &rest functions)
   "Return a function to apply COMBINE-FN with the results of branching FUNCTIONS.

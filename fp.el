@@ -318,7 +318,7 @@ All of the arguments to function are applied to each of the predicates in turn
 until one returns a \"truthy\" value, at which point fn returns the result of
 applying its arguments to the corresponding transformer."
   (declare (pure t)
-           (indent defun)
+           (indent 0)
            (side-effect-free error-free))
   (setq pairs (mapcar (lambda (it)
                         (if (listp it)
@@ -329,9 +329,9 @@ applying its arguments to the corresponding transformer."
     `(lambda (&rest ,args)
        (cond ,@(mapcar (lambda (v)
                          (list (if (eq (aref v 0) t) t
-                                 `(apply ,@(fp--expand (aref v 0)) ,args))
-                               `(apply ,@(fp--expand (aref v 1)) ,args)))
-                       pairs)))))
+                                `(apply ,@(fp--expand (aref v 0)) ,args))
+                          `(apply ,@(fp--expand (aref v 1)) ,args)))
+                pairs)))))
 
 (defmacro fp-not (fn)
   "Return a function that negates the result of function FN."

@@ -210,8 +210,14 @@ at the values with which this function was called."
                 (append ,pre-args (list ,@args))))))))
 
 (defmacro fp-converge (combine-fn &rest functions)
-  "Return a function to apply COMBINE-FN with the results of branching FUNCTIONS.
-If the first element of FUNCTIONS is a vector, it will be used instead.
+  "Return a function combining results of FUNCTIONS applied to its args.
+
+Argument COMBINE-FN is a required function designator or fp form
+used to combine the results returned by FUNCTIONS.
+
+Remaining arguments FUNCTIONS are function designators or fp forms
+applied to the generated lambda arguments. If the first value is
+a vector, its elements are used instead.
 
 Example:
 
@@ -226,9 +232,9 @@ Result: \"JOHNjohn\"."
         (list
          ,@(mapcar (lambda (v)
                      `(apply ,@(fp--expand v) ,args))
-                   (if (vectorp (car functions))
-                       (append (car functions) nil)
-                     functions)))))))
+            (if (vectorp (car functions))
+                (append (car functions) nil)
+              functions)))))))
 
 (defmacro fp-use-with (combine-fn &rest functions)
   "Return a function with the arity of length FUNCTIONS.

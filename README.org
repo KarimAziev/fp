@@ -47,6 +47,7 @@ can usually write the function name directly, such as =(fp-partial my-fn arg)=.
     - [[#boolean-combinators-functions][Boolean combinators (functions)]]
       - [[#fp-t-rest-ignored][~fp-t~ (&rest ignored)]]
       - [[#fp-nil-rest-ignored][~fp-nil~ (&rest ignored)]]
+  - [[#development][Development]]
 #+END_QUOTE
 
 ** Requirements
@@ -368,3 +369,18 @@ Do nothing and return nil. This function accepts any number of arguments but ign
 (fp-nil)
    ⇒ nil
 #+end_example
+
+** Development
+
+Run the unit tests with:
+
+#+begin_src sh
+make test
+#+end_src
+
+Run the complete local gate (ERT tests, Checkdoc, and byte compilation with
+warnings treated as errors) with:
+
+#+begin_src sh
+make check
+#+end_src

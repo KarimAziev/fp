@@ -25,7 +25,7 @@
 
 ;;; Commentary:
 
-;; This is a tiny library of point-free-style combinators for Emacs Lisp. Most entry points
+;; This is a tiny library of point-free-style combinators for Emacs Lisp.  Most entry points
 ;; are macros that expand to lambda forms.
 
 ;; After installation, you can see usage examples by running "M-x shortdoc" and typing `fp'.
@@ -196,7 +196,7 @@ arguments are fixed to the values supplied here."
 (defmacro fp-rpartial (fn &rest args)
   "Return a partial application of a function FN to right-hand ARGS.
 
-ARGS is a list of the last N arguments to pass to FN. The result is a new
+ARGS is a list of the last N arguments to pass to FN.  The result is a new
 function which does the same as FN, except that the last N arguments are fixed
 at the values with which this function was called."
   (declare (side-effect-free t))
@@ -354,7 +354,7 @@ This function accepts any number of arguments but ignores them."
 (defmacro fp-ignore-errors-rpartial (fn &rest args)
   "Return a function that takes in arguments FN and ARGS.
 This macro returns a lambda function that takes &REST PRE-ARGS.
-Within the lambda function, apply FN to PRE-ARGS and ARGS. Should FN throw an
+Within the lambda function, apply FN to PRE-ARGS and ARGS.  Should FN throw an
 error, return nil instead."
   (declare
    (indent defun))

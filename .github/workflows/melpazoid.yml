@@ -28,4 +28,4 @@ jobs:
         RECIPE: (fp :fetcher github :repo "KarimAziev/fp")
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: false
-      run: echo $GITHUB_REF && make -C ~/melpazoid
+      run: echo "$GITHUB_REF" && make -C ~/melpazoid

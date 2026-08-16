@@ -6,7 +6,7 @@
 ;; URL: https://github.com/KarimAziev/fp
 ;; Keywords: lisp, extensions
 ;; Version: 2.2.0
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "27.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -118,6 +118,8 @@
 
 ;;; Code:
 
+
+(require 'seq)
 
 
 (defun fp--expand (init-fn)

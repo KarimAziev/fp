@@ -10,9 +10,7 @@ test:
 	  -f ert-run-tests-batch-and-exit
 
 checkdoc:
-	$(EMACS_BATCH) --eval \
-	  '(progn (require (quote checkdoc)) (find-file "fp.el") \
-	     (let ((checkdoc-autofix-flag nil)) (checkdoc-current-buffer)))'
+	$(EMACS_BATCH) -l test/run-checkdoc.el
 
 compile:
 	$(EMACS_BATCH) --eval '(setq byte-compile-error-on-warn t)' \
